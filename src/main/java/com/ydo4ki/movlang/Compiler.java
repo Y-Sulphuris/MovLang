@@ -73,7 +73,7 @@ public class Compiler {
 
 		BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
-		String s = null;
+		String s;
 		while ((s = stdInput.readLine()) != null) {
 			System.out.println(s);
 		}
