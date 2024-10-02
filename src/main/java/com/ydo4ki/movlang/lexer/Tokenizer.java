@@ -155,10 +155,10 @@ public class Tokenizer {
 				type = TokenType.COLON;
 				break;
 			case '[':
-				type = TokenType.OPEN;
+				type = TokenType.OPEN_SQUARE;
 				break;
 			case ']':
-				type = TokenType.CLOSE;
+				type = TokenType.CLOSE_SQUARE;
 				break;
 			default:
 				type = TokenType.ERROR;
@@ -226,6 +226,6 @@ public class Tokenizer {
 	}
 
 	private boolean isValidNameChar(char ch) {
-		return ch == '_' || isNumeric(ch) || Character.isAlphabetic(ch);
+		return ch == '_' || ch == '@' || isNumeric(ch) || Character.isAlphabetic(ch);
 	}
 }

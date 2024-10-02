@@ -55,6 +55,16 @@ public class $runtime {
 	}
 
 
+	static void clearConsole() {
+		try {
+			Runtime rt = Runtime.getRuntime();
+			if (System.getProperty("os.name").contains("Windows")) {
+				rt.exec("cls");
+			} else {
+				rt.exec("clear");
+			}
+		} catch (Exception ignored) {}
+	}
 
 /*
 	static void shiftRight(long _StartAddress, long _Size, int n) {

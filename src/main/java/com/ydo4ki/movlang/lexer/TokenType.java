@@ -13,6 +13,6 @@ public enum TokenType {
 	PLUS,
 	BITS,
 	COLON,
-	OPEN,
-	CLOSE
+	OPEN_SQUARE,
+	CLOSE_SQUARE
 }

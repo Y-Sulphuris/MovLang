@@ -1,7 +1,10 @@
 package com.ydo4ki.movlang;
 
+import com.ydo4ki.movlang.ast.Parser;
+import com.ydo4ki.movlang.ast.StatementTree;
 import com.ydo4ki.movlang.lexer.Token;
 import com.ydo4ki.movlang.lexer.Tokenizer;
+import lombok.val;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,14 +55,21 @@ public class Compiler {
 		}
 	}
 
+	public static String source;
+
 	private void compile(File outputFile) throws IOException {
 		StringBuilder sourceb = new StringBuilder();
 		for (String str : Files.readAllLines(srcFile.toPath())) {
 			sourceb.append(str).append('\n');
 		}
-		String source = sourceb.toString();
-		for (Token token : new Tokenizer().tokenize(source, srcFile)) {
+		source = sourceb.toString();
+		val tokens = new Tokenizer().tokenize(source, srcFile);
+		for (Token token : tokens) {
 			System.out.println(token);
+		}
+		System.out.println("\nStatements:\n");
+		for (StatementTree statement : new Parser(tokens, srcFile.getName()).parse().getStatements()) {
+			System.out.println(statement);
 		}
 	}
 

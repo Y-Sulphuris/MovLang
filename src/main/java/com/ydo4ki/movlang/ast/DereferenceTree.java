@@ -3,6 +3,7 @@ package com.ydo4ki.movlang.ast;
 import com.ydo4ki.movlang.Location;
 import com.ydo4ki.movlang.lexer.Token;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
  * @since 01.10.2024 23:41
  */
 @AllArgsConstructor
+@Getter
 public class DereferenceTree implements LValueTree {
 	private final Token segment;
 	private final Token open;
@@ -21,5 +23,17 @@ public class DereferenceTree implements LValueTree {
 	@Override
 	public Location getLocation() {
 		return Location.between(segment, close);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append(segment.text).append('[');
+		b.append(address);
+		if (plus != null) {
+			b.append(" + ").append(offset);
+		}
+		b.append(']');
+		return b.toString();
 	}
 }

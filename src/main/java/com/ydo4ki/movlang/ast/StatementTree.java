@@ -21,4 +21,15 @@ public class StatementTree implements Tree {
 	public Location getLocation() {
 		return Location.between(label == null ? dest : label, src);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		if (label != null) b.append(label).append('\n');
+		b.append(dest).append(' ').append(src);
+		if (size != null) {
+			b.append(" :").append(size);
+		}
+		return b.toString();
+	}
 }

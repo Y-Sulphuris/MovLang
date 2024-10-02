@@ -17,14 +17,23 @@ public class NumericLiteralExprTree implements SizeExprTree {
 		this.literal = literal;
 		String text = literal.text;
 		if (text.charAt(0) == '_') {
-			this.value = Integer.parseInt(text);
+			this.value = Integer.parseInt(text.substring(1));
 		} else {
 			this.value = Integer.parseInt(text, 16);
 		}
 	}
 
+	public boolean isDecimal() {
+		return literal.text.charAt(0) == '_';
+	}
+
 	@Override
 	public Location getLocation() {
 		return literal.getLocation();
+	}
+
+	@Override
+	public String toString() {
+		return Integer.toHexString(value);
 	}
 }
