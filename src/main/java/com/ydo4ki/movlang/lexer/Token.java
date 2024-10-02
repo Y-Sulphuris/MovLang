@@ -1,6 +1,7 @@
 package com.ydo4ki.movlang.lexer;
 
 import com.ydo4ki.movlang.Location;
+import com.ydo4ki.movlang.ast.Tree;
 
 import java.io.File;
 
@@ -8,7 +9,7 @@ import java.io.File;
  * @author Sulphuris
  * @since 01.10.2024 11:45
  */
-public class Token {
+public class Token implements Tree {
 	public final TokenType type;
 	public final String text;
 	public final Location location;
@@ -30,5 +31,10 @@ public class Token {
 				", endpos=" + location.getEndPos() +
 				", line=" + location.getStartLine() +
 				'}';
+	}
+
+	@Override
+	public Location getLocation() {
+		return location;
 	}
 }

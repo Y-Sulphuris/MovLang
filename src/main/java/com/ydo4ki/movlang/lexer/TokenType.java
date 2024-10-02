@@ -12,5 +12,7 @@ public enum TokenType {
 	STAR,
 	PLUS,
 	BITS,
-	COLON
+	COLON,
+	OPEN,
+	CLOSE
 }

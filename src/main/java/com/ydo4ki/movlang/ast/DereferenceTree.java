@@ -1,0 +1,25 @@
+package com.ydo4ki.movlang.ast;
+
+import com.ydo4ki.movlang.Location;
+import com.ydo4ki.movlang.lexer.Token;
+import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * @author Sulphuris
+ * @since 01.10.2024 23:41
+ */
+@AllArgsConstructor
+public class DereferenceTree implements LValueTree {
+	private final Token segment;
+	private final Token open;
+	private final ExprTree address;
+	private final @Nullable Token plus;
+	private final @Nullable ExprTree offset;
+	private final Token close;
+
+	@Override
+	public Location getLocation() {
+		return Location.between(segment, close);
+	}
+}

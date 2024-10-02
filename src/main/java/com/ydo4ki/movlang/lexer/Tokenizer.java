@@ -154,6 +154,12 @@ public class Tokenizer {
 			case ':':
 				type = TokenType.COLON;
 				break;
+			case '[':
+				type = TokenType.OPEN;
+				break;
+			case ']':
+				type = TokenType.CLOSE;
+				break;
 			default:
 				type = TokenType.ERROR;
 				exception = new Exception();

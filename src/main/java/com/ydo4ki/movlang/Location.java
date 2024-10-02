@@ -1,6 +1,8 @@
 package com.ydo4ki.movlang;
 
+import com.ydo4ki.movlang.ast.Tree;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -16,6 +18,9 @@ public final class Location {
 	private final int endLine;
 	private final File sourceFile;
 
+	public static Location between(@NotNull Tree start,@NotNull Tree end) {
+		return between(start.getLocation(), end.getLocation());
+	}
 	public static Location between(Location start, Location end) {
 		if (!end.getSourceFile().equals(start.getSourceFile()))
 			return start;
