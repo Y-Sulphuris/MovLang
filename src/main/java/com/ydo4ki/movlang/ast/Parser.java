@@ -137,7 +137,7 @@ public class Parser {
 		if (next.type != TokenType.COLON) return null;
 		nextToken(); // eat colon (next)
 		token = nextToken();
-		val label = new LabelTree(name, next);
+		val label = new LabelTree(name, next, statements.size());
 		labels.put(name.text, label);
 		return label;
 	}

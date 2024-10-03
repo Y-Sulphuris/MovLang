@@ -14,6 +14,7 @@ import lombok.Getter;
 public class LabelTree implements Tree {
 	private final Token name;
 	private final Token colon;
+	private final int i;
 
 	@Override
 	public Location getLocation() {
@@ -22,6 +23,6 @@ public class LabelTree implements Tree {
 
 	@Override
 	public String toString() {
-		return name.text + ':';
+		return name.text + "(" + i + "):";
 	}
 }

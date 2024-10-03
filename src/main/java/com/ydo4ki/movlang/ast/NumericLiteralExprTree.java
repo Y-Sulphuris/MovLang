@@ -4,6 +4,8 @@ import com.ydo4ki.movlang.Location;
 import com.ydo4ki.movlang.lexer.Token;
 import lombok.Getter;
 
+import java.math.BigInteger;
+
 /**
  * @author Sulphuris
  * @since 02.10.2024 10:10
@@ -11,15 +13,15 @@ import lombok.Getter;
 @Getter
 public class NumericLiteralExprTree implements SizeExprTree {
 	private final Token literal;
-	private final int value;
+	private final BigInteger value;
 
 	public NumericLiteralExprTree(Token literal) {
 		this.literal = literal;
 		String text = literal.text;
 		if (text.charAt(0) == '_') {
-			this.value = Integer.parseInt(text.substring(1));
+			this.value = new BigInteger(text.substring(1));
 		} else {
-			this.value = Integer.parseInt(text, 16);
+			this.value = new BigInteger(text, 16);
 		}
 	}
 
@@ -34,6 +36,6 @@ public class NumericLiteralExprTree implements SizeExprTree {
 
 	@Override
 	public String toString() {
-		return Integer.toHexString(value);
+		return value.toString(16);
 	}
 }
