@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  */
 @AllArgsConstructor
 @Getter
-public class DereferenceTree implements LValueTree {
+public class DereferenceExprTree implements LValueExprTree {
 	private final Token segment;
 	private final Token open;
 	private final ExprTree address;

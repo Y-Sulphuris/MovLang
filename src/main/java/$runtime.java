@@ -75,6 +75,19 @@ public class $runtime {
 		return (0xFFFFFFFF_FFFFFFFFL << (64 - _Bits1)) >>> _Offset;
 	}
 
+	static MethodHandle[] getInstructions(Class<?> program, MethodHandles.Lookup lookup, int size) {
+		MethodHandle[] instructions = new MethodHandle[size];
+		MethodType type = MethodType.methodType(void.class);
+		for (int i = 0, _Len = instructions.length; i < _Len; i++) {
+			try {
+				instructions[i] = lookup.findStatic(program, "$" + i, type);
+			} catch (NoSuchMethodException | IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return instructions;
+	}
+
 	static long segment(long size) {
 		long a = u.allocateMemory(size);
 		u.setMemory(a, size, (byte) 0);
@@ -84,6 +97,16 @@ public class $runtime {
 		long a = u.allocateMemory(size);
 		u.setMemory(a, size, (byte) ' ');
 		return a;
+	}
+
+	static void run(MethodHandle[] instructions, long $E) throws Throwable {
+		$runtime.u.putInt($E, 0);
+		$runtime.u.putInt($runtime.getAddr($E, 4), 0); // exit code
+		for (; $runtime.u.getInt($E) < instructions.length; $runtime.u.putInt($E, $runtime.u.getInt($E)+1)) {
+			int i = $runtime.u.getInt($E);
+			if (i > instructions.length || i < 0) System.exit(0x6C);
+			instructions[i].invokeExact();
+		}
 	}
 
 	private static final MethodHandle clr;

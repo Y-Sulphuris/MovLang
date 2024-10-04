@@ -3,6 +3,7 @@ package com.ydo4ki.movlang.ast;
 import com.ydo4ki.movlang.Location;
 import com.ydo4ki.movlang.lexer.Token;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -10,9 +11,10 @@ import org.jetbrains.annotations.Nullable;
  * @since 01.10.2024 19:26
  */
 @AllArgsConstructor
+@Getter
 public class StatementTree implements Tree {
 	private final @Nullable LabelTree label;
-	private final LValueTree dest;
+	private final DereferenceExprTree dest;
 	private final ExprTree src;
 	private final @Nullable Token colon;
 	private final @Nullable SizeExprTree size;
@@ -31,5 +33,19 @@ public class StatementTree implements Tree {
 			b.append(" :").append(size);
 		}
 		return b.toString();
+	}
+
+	public @Nullable Long getBytesSize() {
+		if (size == null) return src instanceof CharLiteralExprTree ? 1L : 4L;
+		if (size instanceof NumericLiteralExprTree) {
+			return ((NumericLiteralExprTree) size).getValue().longValueExact();
+		}
+		return null;
+	}
+	public @Nullable Long getBitSize() {
+		if (size instanceof BitSizeExprTree) {
+			return ((BitSizeExprTree) size).getExpr().getValue().longValueExact();
+		}
+		return null;
 	}
 }

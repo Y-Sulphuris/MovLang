@@ -1,7 +1,6 @@
 import java.io.PrintStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 
 /**
  * @author Sulphuris
@@ -9,19 +8,7 @@ import java.lang.invoke.MethodType;
  */
 public class $pg_ex {
 
-	private static final MethodHandle[] instructions = new MethodHandle[6];
-	private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-	static {
-		MethodType type = MethodType.methodType(void.class);
-		for (int i = 0, _Len = instructions.length; i < _Len; i++) {
-			try {
-				instructions[i] = lookup.findStatic($pg_ex.class, "$" + i, type);
-			} catch (NoSuchMethodException | IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
+	private static final MethodHandle[] instructions = $runtime.getInstructions($pg_ex.class, MethodHandles.lookup(), 5);
 
 	static final int _lb_hello = 0;
 
@@ -31,11 +18,9 @@ public class $pg_ex {
 	static final long $S = $runtime.segment(0xFFFFL);
 
 	public static void main(String[] args) throws Throwable {
-		$runtime.u.putInt($E, 0);
-		for (; $runtime.u.getInt($E) < instructions.length; $runtime.u.putInt($E, $runtime.u.getInt($E)+1)) {
-			instructions[$runtime.u.getInt($E)].invokeExact();
-		}
+		$runtime.run(instructions, $E);
 		$runtime.repaintConsole($C, 0xFFFFL);
+		System.exit($runtime.u.getInt($runtime.getAddr($E, 4)));
 	}
 
 	static void $0() {

@@ -2,8 +2,10 @@ package com.ydo4ki.movlang;
 
 import com.ydo4ki.movlang.ast.Parser;
 import com.ydo4ki.movlang.ast.StatementTree;
+import com.ydo4ki.movlang.codegen.Generator;
 import com.ydo4ki.movlang.lexer.Token;
 import com.ydo4ki.movlang.lexer.Tokenizer;
+import com.ydo4ki.movlang.preprocessor.Preprocessor;
 import lombok.val;
 
 import java.io.BufferedReader;
@@ -64,13 +66,16 @@ public class Compiler {
 		}
 		source = sourceb.toString();
 		val tokens = new Tokenizer().tokenize(source, srcFile);
-		for (Token token : tokens) {
-			System.out.println(token);
-		}
+		val prepInf = new Preprocessor(tokens).preprocess();
+		//for (Token token : tokens) {
+		//	System.out.println(token);
+		//}
+		val cu = new Parser(prepInf.getTokens(), srcFile.getName()).parse();
 		System.out.println("\nStatements:\n");
-		for (StatementTree statement : new Parser(tokens, srcFile.getName()).parse().getStatements()) {
+		for (StatementTree statement : cu.getStatements()) {
 			System.out.println(statement);
 		}
+		new Generator(prepInf).generate(cu,outputFile);
 	}
 
 

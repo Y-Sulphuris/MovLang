@@ -59,8 +59,8 @@ public class Parser {
 	}
 
 	private StatementTree parseStatement() {
-		@Nullable LabelTree label = parseLabel();
-		LValueTree dest = parseLValue();
+		@Nullable val label = parseLabel();
+		val dest = parseLValue();
 		ExprTree src = parseExpr();
 		Token colon = null;
 		SizeExprTree expr = null;
@@ -112,7 +112,7 @@ public class Parser {
 		return new NumericLiteralExprTree(num);
 	}
 
-	private DereferenceTree parseLValue() {
+	private DereferenceExprTree parseLValue() {
 		Token segment = token;
 		token = nextToken();
 		Token open = assertAndNext(TokenType.OPEN_SQUARE);
@@ -127,7 +127,7 @@ public class Parser {
 		assertToken(TokenType.CLOSE_SQUARE);
 		Token close = token;
 		token = nextToken();
-		return new DereferenceTree(segment, open, address, plus, offset, close);
+		return new DereferenceExprTree(segment, open, address, plus, offset, close);
 	}
 
 	private @Nullable LabelTree parseLabel() {
