@@ -31,8 +31,6 @@ public class $runtime {
 
 	public static final Unsafe u = getU();
 
-	private static final HashMap<String, Long> segments = new HashMap<>();
-
 	static void mov1(long _Segment, int _Addr, byte _Value) {
 		u.putByte(_Segment + _Addr, _Value);
 	}
@@ -80,7 +78,7 @@ public class $runtime {
 		MethodType type = MethodType.methodType(void.class);
 		for (int i = 0, _Len = instructions.length; i < _Len; i++) {
 			try {
-				instructions[i] = lookup.findStatic(program, "$" + i, type);
+				instructions[i] = lookup.findStatic(program, "$" + Integer.toHexString(i), type);
 			} catch (NoSuchMethodException | IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}

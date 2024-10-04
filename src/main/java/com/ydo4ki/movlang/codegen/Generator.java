@@ -37,12 +37,12 @@ public class Generator {
 
 	public void generate(CompilationUnitTree cu, File outputDir) {
 		outputDir.mkdirs();
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		cw.visit(52, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, "$program", null, null, null);
+		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS/* | ClassWriter.COMPUTE_FRAMES*/);
+		cw.visit(49, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, "$program", null, "java/lang/Object", null);
 		cw.visitSource(cu.getFileName(), cu.getFileName());
 		//writeLabels(cw, cu);
-		writeConstants(cw, cu);
 		writeInstructions(cw, cu);
+		writeConstants(cw, cu);
 
 		try {
 			File clFile = new File(outputDir, "$program.class");
@@ -65,7 +65,7 @@ public class Generator {
 	}
 
 	private void writeStatement(ClassWriter cw, StatementTree statement, int i) {
-		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "$" + i, "()V", null, null);
+		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "$" + Integer.toHexString(i), "()V", null, null);
 		Label l = new Label();
 		mv.visitLabel(l);
 		mv.visitLineNumber(statement.getLocation().getEndLine(), l);
@@ -81,7 +81,7 @@ public class Generator {
 		loadExpr(mv, statement.getSrc(), size);
 		String method = "mov"+size;
 		String la = typeBySize(size);
-		mv.visitFieldInsn(INVOKESTATIC, "$runtime", method, "(JI"+la+")V");
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, "(JI"+la+")V");
 	}
 
 	private String typeBySize(long size) {
@@ -101,7 +101,7 @@ public class Generator {
 	private void loadExpr(MethodVisitor mv, ExprTree src, Long size) {
 		if (src instanceof DereferenceExprTree) {
 			loadDereferensing(mv, (DereferenceExprTree) src);
-			mv.visitFieldInsn(INVOKESTATIC, "$runtime", "getAddr", "(JI)I");
+			mv.visitMethodInsn(INVOKESTATIC, "$runtime", "getAddr", "(JI)I");
 		} else if (src instanceof NumericLiteralExprTree) {
 			loadNumberConst(mv, (NumericLiteralExprTree) src, size);
 		} else if (src instanceof CharLiteralExprTree) {
@@ -149,7 +149,12 @@ public class Generator {
 		val offset = dest.getOffset();
 		if (offset != null) {
 			loadExpr(mv, offset, 4L);
-			mv.visitInsn(LADD);
+			mv.visitInsn(IADD);
+		}
+
+		String name = dest.getSegment().text;
+		if (!segments.containsKey(name)) {
+			segments.put(name, defaultSegSize);
 		}
 	}
 
@@ -175,23 +180,17 @@ public class Generator {
 
 
 		FieldVisitor fv = cw.visitField(ACC_STATIC | ACC_FINAL,
-				"instructions", "[java/lang/invoke/MethodHandle", null, null
+				"instructions", "[Ljava/lang/invoke/MethodHandle;", null, null
 		);
 		fv.visitEnd();
 
 		// instructions = $runtime.getInstructions($program.class, MethodHandles.lookup(), size);
 		mv.visitLdcInsn(Type.getType("L$program;"));
-		mv.visitFieldInsn(INVOKESTATIC, "java/lang/invoke/MethodHandles", "lookup", "()Ljava/lang/invoke/MethodHandles$Lookup;");
+		mv.visitMethodInsn(INVOKESTATIC, "java/lang/invoke/MethodHandles", "lookup", "()Ljava/lang/invoke/MethodHandles$Lookup;");
 		mv.visitLdcInsn(size);
-		mv.visitFieldInsn(INVOKESTATIC, "$runtime", "getInstructions", "(Ljava/lang/Class;Ljava/lang/invoke/MethodHandles$Lookup;I)[Ljava/lang/invoke/MethodHandle;");
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "getInstructions", "(Ljava/lang/Class;Ljava/lang/invoke/MethodHandles$Lookup;I)[Ljava/lang/invoke/MethodHandle;");
 		mv.visitFieldInsn(PUTSTATIC, "$program", "instructions", "[Ljava/lang/invoke/MethodHandle;");
 
-		for (StatementTree statement : cu.getStatements()) {
-			String name = statement.getDest().getSegment().text;
-			if (!segments.containsKey(name)) {
-				segments.put(name, defaultSegSize);
-			}
-		}
 		for (Map.Entry<String, Long> entry : segments.entrySet()) {
 			String name = entry.getKey();
 			long segSize = entry.getValue();
@@ -211,7 +210,7 @@ public class Generator {
 
 	private void writeSegInit(MethodVisitor mv, String name, long segSize, String method) {
 		mv.visitLdcInsn(segSize);
-		mv.visitFieldInsn(INVOKESTATIC, "$runtime", method, "(J)J");
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, "(J)J");
 		mv.visitFieldInsn(PUTSTATIC, "$program", '$' + name, "J");
 	}
 

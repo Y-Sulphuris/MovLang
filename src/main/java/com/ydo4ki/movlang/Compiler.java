@@ -48,10 +48,10 @@ public class Compiler {
 
 		long end = System.currentTimeMillis();
 		System.out.println("Finished (total: " + (end - start) + "ms)\n");
-		if (true) return;
+
 		if (outputFile.exists()) {
 			System.out.println("Starting process...\n");
-			proc("java -cp out/jvm/; $mov");
+			proc("java -cp out/jvm/; $program");
 		} else {
 			System.out.println("Compilation error");
 		}
