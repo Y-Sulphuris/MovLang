@@ -1,19 +1,17 @@
 package com.ydo4ki.movlang.codegen;
 
 import com.ydo4ki.movlang.ast.*;
-import com.ydo4ki.movlang.lexer.UnexpectedTokenException;
 import com.ydo4ki.movlang.preprocessor.PreprocessorInfo;
 import com.ydo4ki.movlang.preprocessor.SegmentInfo;
 import lombok.val;
 import org.objectweb.asm.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -37,12 +35,16 @@ public class Generator {
 
 	public void generate(CompilationUnitTree cu, File outputDir) {
 		outputDir.mkdirs();
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		cw.visit(49, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, "$program", null, "java/lang/Object", null);
 		cw.visitSource(cu.getFileName(), cu.getFileName());
 		//writeLabels(cw, cu);
 		writeInstructions(cw, cu);
 		writeConstants(cw, cu);
+		writeMain(cw, cu);
+
+
+		cw.visitEnd();
 
 		try {
 			File clFile = new File(outputDir, "$program.class");
@@ -51,9 +53,37 @@ public class Generator {
 			OutputStream stream = Files.newOutputStream(clFile.toPath());
 			stream.write(cw.toByteArray());
 			stream.close();
+
+			val rtSrc = Thread.currentThread().getContextClassLoader().getResourceAsStream("$runtime.class");
+			assert rtSrc != null;
+			File rtDest = new File(outputDir, "$runtime.class");
+			if (rtDest.exists()) {
+				//noinspection ResultOfMethodCallIgnored
+				rtDest.delete();
+			}
+			Files.copy(rtSrc, rtDest.toPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void writeMain(ClassWriter cw, CompilationUnitTree cu) {
+		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "main", "([Ljava/lang/String;)V", null, null);
+		Label l = new Label();
+		mv.visitLabel(l);
+		mv.visitLineNumber(-1, l);
+		mv.visitFieldInsn(GETSTATIC, "$program", "instructions", "[Ljava/lang/invoke/MethodHandle;");
+		mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getExecutable(), "J");
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "run", "([Ljava/lang/invoke/MethodHandle;J)V");
+		mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getStdout(), "J");
+		mv.visitLdcInsn(prepInf.getStdout().getSize());
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "repaintConsole", "(JJ)V");
+
+
+		mv.visitInsn(RETURN);
+		//args will be ignored
+		mv.visitMaxs(1, 1);
+		mv.visitEnd();
 	}
 
 	private void writeInstructions(ClassWriter cw, CompilationUnitTree cu) {
@@ -72,16 +102,37 @@ public class Generator {
 		writeStatement0(mv, statement);
 
 		mv.visitInsn(RETURN);
+		//args will be ignored
+		mv.visitMaxs(1, 1);
 	}
 
 	private void writeStatement0(MethodVisitor mv, StatementTree statement) {
 		Long size = statement.getBytesSize();
 		Long bSize = statement.getBitSize();
+		String method;
+		String sign;
 		loadDereferensing(mv, statement.getDest());
-		loadExpr(mv, statement.getSrc(), size);
-		String method = "mov"+size;
-		String la = typeBySize(size);
-		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, "(JI"+la+")V");
+		if (statement.getSrc() instanceof DereferenceExprTree) {
+			loadDereferensing(mv, (DereferenceExprTree) statement.getSrc());
+			method = movName(size);
+			sign = movSign(size, bSize);
+		} else {
+			loadExpr(mv, statement.getSrc(), size);
+			method = "put";
+			String la = typeBySize(size);
+			sign = "(JI" + la + ")V";
+		}
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, sign);
+	}
+
+	private String movSign(long size, Long bSize) {
+		if (size == 1 || size == 2 || size == 4 || size == 8) return "(JIJI)V";
+		return "(JIJIJ)V";
+	}
+
+	private String movName(long size) {
+		if (size == 1 || size == 2 || size == 4 || size == 8) return "mov" + size;
+		return "mov";
 	}
 
 	private String typeBySize(long size) {
@@ -122,9 +173,9 @@ public class Generator {
 		if (value >= -1 && value <= 5) {
 			mv.visitInsn(ICONST_0 + value);
 		} else if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
-			mv.visitIntInsn(BIPUSH,value);
+			mv.visitIntInsn(BIPUSH, value);
 		} else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
-			mv.visitIntInsn(SIPUSH,value);
+			mv.visitIntInsn(SIPUSH, value);
 		} else {
 			mv.visitLdcInsn(value);
 		}
@@ -133,13 +184,9 @@ public class Generator {
 	private void loadCharConst(MethodVisitor mv, CharLiteralExprTree src, Long _Size) {
 		long size = _Size;
 		if (size == 8) {
-			mv.visitLdcInsn((long)src.getCh().text.charAt(0));
-		} else if (size == 4) {
-			mv.visitLdcInsn((int)src.getCh().text.charAt(0));
-		} else if (size == 2) {
-			mv.visitIntInsn(SIPUSH, src.getCh().text.charAt(0));
-		} else if (size == 1) {
-			mv.visitIntInsn(BIPUSH, src.getCh().text.charAt(0));
+			mv.visitLdcInsn((long) src.getCh().text.charAt(0));
+		} else if (size == 4 || size == 2 || size == 1) {
+			loadIntValue(mv, src.getCh().text.charAt(0));
 		} else throw new UnsupportedOperationException(String.valueOf(_Size));
 	}
 
@@ -147,12 +194,8 @@ public class Generator {
 		long size = _Size;
 		if (size == 8) {
 			mv.visitLdcInsn(src.getValue().longValueExact());
-		} else if (size == 4) {
-			mv.visitLdcInsn(src.getValue().intValue());
-		} else if (size == 2) {
-			mv.visitIntInsn(SIPUSH, src.getValue().shortValue());
-		} else if (size == 1) {
-			mv.visitIntInsn(BIPUSH, src.getValue().byteValue());
+		} else if (size == 4 || size == 2 || size == 1) {
+			loadIntValue(mv, src.getValue().intValue());
 		} else throw new UnsupportedOperationException(String.valueOf(_Size));
 	}
 
@@ -171,7 +214,8 @@ public class Generator {
 		}
 	}
 
-	/*private void writeLabels(ClassWriter cw, CompilationUnitTree cu) {
+	/*
+	private void writeLabels(ClassWriter cw, CompilationUnitTree cu) {
 		for (StatementTree statement : cu.getStatements()) {
 			LabelTree lb = statement.getLabel();
 			if (lb != null) writeLabel(cw, lb);
@@ -181,7 +225,8 @@ public class Generator {
 	private void writeLabel(ClassWriter cw, LabelTree lb) {
 		FieldVisitor fv = cw.visitField(ACC_STATIC | ACC_FINAL, "_lb_" + lb.getName().text, "I", null, lb.getI());
 		fv.visitEnd();
-	}*/
+	}
+	*/
 
 	private void writeConstants(ClassWriter cw, CompilationUnitTree cu) {
 		int size = cu.getStatements().size();
@@ -218,6 +263,8 @@ public class Generator {
 		}
 
 		mv.visitInsn(RETURN);
+		//args will be ignored
+		mv.visitMaxs(1, 1);
 		mv.visitEnd();
 	}
 

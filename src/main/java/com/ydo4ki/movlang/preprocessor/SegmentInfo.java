@@ -6,4 +6,9 @@ import lombok.Data;
 public class SegmentInfo {
 	private final String name;
 	private final long size;
+
+	@Override
+	public String toString() {
+		return name;
+	}
 }

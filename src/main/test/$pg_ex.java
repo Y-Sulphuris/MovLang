@@ -20,32 +20,31 @@ public class $pg_ex {
 	public static void main(String[] args) throws Throwable {
 		$runtime.run(instructions, $E);
 		$runtime.repaintConsole($C, 0xFFFFL);
-		System.exit($runtime.u.getInt($runtime.getAddr($E, 4)));
 	}
 
 	static void $0() {
 		//noinspection PointlessArithmeticExpression
-		$runtime.mov1($C, $runtime.getAddr($S, 0) + 0x0, (byte) 'h');
+		$runtime.put($C, $runtime.getAddr($S, 0) + 0x0, (byte) 'h');
 	}
 
 	static void $1() {
-		$runtime.mov1($C, $runtime.getAddr($S, 0) + 0x1, (byte) 'e');
+		$runtime.put($C, $runtime.getAddr($S, 0) + 0x1, (byte) 'e');
 	}
 
 	static void $2() {
-		$runtime.mov1($C, $runtime.getAddr($S, 0) + 0x2, (byte) 'l');
+		$runtime.put($C, $runtime.getAddr($S, 0) + 0x2, (byte) 'l');
 	}
 
 	static void $3() {
-		$runtime.mov1($C, $runtime.getAddr($S, 0) + 0x3, (byte) 'l');
+		$runtime.put($C, $runtime.getAddr($S, 0) + 0x3, (byte) 'l');
 	}
 
 	static void $4() {
-		$runtime.mov1($C, $runtime.getAddr($S, 0) + 0x4, (byte) 'o');
+		$runtime.put($C, $runtime.getAddr($S, 0) + 0x4, (byte) 'o');
 	}
 
 	static void $5() {
-		$runtime.mov4($E, 0, _lb_hello);
+		$runtime.put($E, 0, _lb_hello);
 	}
 
 

@@ -36,7 +36,7 @@ public class StatementTree implements Tree {
 	}
 
 	public @Nullable Long getBytesSize() {
-		if (size == null) return src instanceof CharLiteralExprTree ? 1L : 4L;
+		if (size == null) return src instanceof CharLiteralExprTree || src instanceof DereferenceExprTree ? 1L : 4L;
 		if (size instanceof NumericLiteralExprTree) {
 			return ((NumericLiteralExprTree) size).getValue().longValueExact();
 		}

@@ -5,7 +5,6 @@ import sun.misc.Unsafe;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.HashMap;
 
 /**
  * @author Sulphuris
@@ -31,23 +30,42 @@ public class $runtime {
 
 	public static final Unsafe u = getU();
 
-	static void mov1(long _Segment, int _Addr, byte _Value) {
+
+	static void mov(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr, long _Bytes) {
+		u.copyMemory(_SrcSeg + _SrcAddr, _DstSeg + _DstAddr, _Bytes);
+	}
+
+	static void mov1(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		u.putByte(_DstSeg + _DstAddr, u.getByte(_SrcSeg + _SrcAddr));
+	}
+	static void mov2(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		u.putShort(_DstSeg + _DstAddr, u.getShort(_SrcSeg + _SrcAddr));
+	}
+	static void mov4(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		u.putInt(_DstSeg + _DstAddr, u.getInt(_SrcSeg + _SrcAddr));
+	}
+	static void mov8(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		u.putLong(_DstSeg + _DstAddr, u.getLong(_SrcSeg + _SrcAddr));
+	}
+
+
+	static void put(long _Segment, int _Addr, byte _Value) {
 		u.putByte(_Segment + _Addr, _Value);
 	}
 
-	static void mov2(long _Segment, int _Addr, short _Value) {
+	static void put(long _Segment, int _Addr, short _Value) {
 		u.putShort(_Segment + _Addr, _Value);
 	}
 
-	static void mov4(long _Segment, int _Addr, int _Value) {
+	static void put(long _Segment, int _Addr, int _Value) {
 		u.putInt(_Segment + _Addr, _Value);
 	}
 
-	static void mov8(long _Segment, int _Addr, long _Value) {
+	static void put(long _Segment, int _Addr, long _Value) {
 		u.putLong(_Segment + _Addr, _Value);
 	}
 
-	static void movX(long _Segment, int _Addr, long _Value, int _BitSize) {
+	static void put(long _Segment, int _Addr, long _Value, int _BitSize) {
 		if (_BitSize == Long.SIZE) {
 			u.putLong(_Segment + _Addr, _Value);
 		} else {
@@ -57,7 +75,7 @@ public class $runtime {
 		}
 	}
 
-	static void movX(long _Segment, int _Addr, byte[] _Value) {
+	static void put(long _Segment, int _Addr, byte[] _Value) {
 		u.copyMemory(_Value, u.arrayBaseOffset(byte[].class), null, _Segment + _Addr, _Value.length);
 	}
 
@@ -91,6 +109,7 @@ public class $runtime {
 		u.setMemory(a, size, (byte) 0);
 		return a;
 	}
+
 	static long consoleSegment(long size) {
 		long a = u.allocateMemory(size);
 		u.setMemory(a, size, (byte) ' ');
@@ -100,11 +119,12 @@ public class $runtime {
 	static void run(MethodHandle[] instructions, long $E) throws Throwable {
 		$runtime.u.putInt($E, 0);
 		$runtime.u.putInt($runtime.getAddr($E, 4), 0); // exit code
-		for (; $runtime.u.getInt($E) < instructions.length; $runtime.u.putInt($E, $runtime.u.getInt($E)+1)) {
+		for (; $runtime.u.getInt($E) < instructions.length; $runtime.u.putInt($E, $runtime.u.getInt($E) + 1)) {
 			int i = $runtime.u.getInt($E);
 			if (i > instructions.length || i < 0) System.exit(0x6C);
 			instructions[i].invokeExact();
 		}
+		System.exit($runtime.u.getInt($runtime.getAddr($E, 4)));
 	}
 
 	private static final MethodHandle clr;
@@ -154,7 +174,7 @@ public class $runtime {
 			if (!Character.isWhitespace(ch)) lastSymbol = i;
 			b.append(ch);
 		}
-		System.out.print(b.substring(0, lastSymbol+1));
+		System.out.print(b.substring(0, lastSymbol + 1));
 	}
 
 	static void repaintConsole(long _ConsoleSeg, long _Size) {
