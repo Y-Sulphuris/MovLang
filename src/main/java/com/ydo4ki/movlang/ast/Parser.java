@@ -113,8 +113,7 @@ public class Parser {
 	}
 
 	private DereferenceExprTree parseLValue() {
-		Token segment = token;
-		token = nextToken();
+		Token segment = assertAndNext(TokenType.IDENTIFIER);
 		Token open = assertAndNext(TokenType.OPEN_SQUARE);
 		ExprTree address = parseExpr();
 		Token plus = null;

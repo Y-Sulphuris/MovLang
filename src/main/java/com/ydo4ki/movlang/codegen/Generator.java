@@ -37,7 +37,7 @@ public class Generator {
 
 	public void generate(CompilationUnitTree cu, File outputDir) {
 		outputDir.mkdirs();
-		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS/* | ClassWriter.COMPUTE_FRAMES*/);
+		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		cw.visit(49, ACC_PUBLIC | ACC_SUPER | ACC_FINAL, "$program", null, "java/lang/Object", null);
 		cw.visitSource(cu.getFileName(), cu.getFileName());
 		//writeLabels(cw, cu);
@@ -114,7 +114,20 @@ public class Generator {
 	}
 
 	private void loadLabelReference(MethodVisitor mv, LabelReferenceExprTree src) {
-		mv.visitLdcInsn(src.getLabel().getI());
+		loadIntValue(mv, src.getLabel().getI());
+	}
+
+
+	private void loadIntValue(MethodVisitor mv, int value) {
+		if (value >= -1 && value <= 5) {
+			mv.visitInsn(ICONST_0 + value);
+		} else if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
+			mv.visitIntInsn(BIPUSH,value);
+		} else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
+			mv.visitIntInsn(SIPUSH,value);
+		} else {
+			mv.visitLdcInsn(value);
+		}
 	}
 
 	private void loadCharConst(MethodVisitor mv, CharLiteralExprTree src, Long _Size) {

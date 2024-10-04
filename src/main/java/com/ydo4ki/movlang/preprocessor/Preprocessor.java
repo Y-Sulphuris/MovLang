@@ -1,6 +1,7 @@
 package com.ydo4ki.movlang.preprocessor;
 
 import com.ydo4ki.movlang.lexer.Token;
+import com.ydo4ki.movlang.lexer.TokenType;
 
 import java.util.Stack;
 
@@ -22,8 +23,9 @@ public class Preprocessor {
 		Stack<Token> newTokens = info.getTokens();
 		//noinspection ForLoopReplaceableByForEach
 		for (int i = 0; i < srcTokens.size(); i++) {
-			//noinspection UseBulkOperation
-			newTokens.add(srcTokens.get(i));
+			Token tok = srcTokens.get(i);
+			if (tok.type == TokenType.COMMENT) continue;
+			newTokens.add(tok);
 		}
 
 
