@@ -75,9 +75,6 @@ public class Generator {
 		mv.visitFieldInsn(GETSTATIC, "$program", "instructions", "[Ljava/lang/invoke/MethodHandle;");
 		mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getExecutable(), "J");
 		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "run", "([Ljava/lang/invoke/MethodHandle;J)V");
-		mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getStdout(), "J");
-		mv.visitLdcInsn(prepInf.getStdout().getSize());
-		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "repaintConsole", "(JJ)V");
 
 
 		mv.visitInsn(RETURN);
@@ -101,6 +98,11 @@ public class Generator {
 		mv.visitLineNumber(statement.getLocation().getEndLine(), l);
 		writeStatement0(mv, statement);
 
+		//mv.visitFieldInsn(GETSTATIC, "java/lang/System","out","Ljava/lang/PrintStream;");
+		//mv.visitLdcInsn(Integer.toHexString(i));
+		//mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/PrintStream", "println", "(Ljava/lang/PrintStream;Ljava/lang/String;)V");
+
+
 		mv.visitInsn(RETURN);
 		//args will be ignored
 		mv.visitMaxs(1, 1);
@@ -123,6 +125,12 @@ public class Generator {
 			sign = "(JI" + la + ")V";
 		}
 		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, sign);
+
+		if (statement.getDest().getSegment().text.equals(prepInf.getStdout().getName())) {
+			mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getStdout(), "J");
+			mv.visitLdcInsn(prepInf.getStdout().getSize());
+			mv.visitMethodInsn(INVOKESTATIC, "$runtime", "repaintConsole", "(JJ)V");
+		}
 	}
 
 	private String movSign(long size, Long bSize) {

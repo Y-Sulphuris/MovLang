@@ -49,12 +49,12 @@ public class Compiler {
 		long end = System.currentTimeMillis();
 		System.out.println("Finished (total: " + (end - start) + "ms)\n");
 
-		if (outputFile.exists()) {
-			System.out.println("Starting process...\n");
-			proc("java -cp out/jvm/; $program");
-		} else {
-			System.out.println("Compilation error");
-		}
+		//if (outputFile.exists()) {
+		//	System.out.println("Starting process...\n");
+		//	proc("java -cp out/jvm/; $program");
+		//} else {
+		//	System.out.println("Compilation error");
+		//}
 	}
 
 	public static String source;

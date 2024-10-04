@@ -19,28 +19,30 @@ public class $pg_ex {
 
 	public static void main(String[] args) throws Throwable {
 		$runtime.run(instructions, $E);
-		$runtime.repaintConsole($C, 0xFFFFL);
 	}
 
 	static void $0() {
-		//noinspection PointlessArithmeticExpression
-		$runtime.put($C, $runtime.getAddr($S, 0) + 0x0, (byte) 'h');
+		$runtime.put($C, $runtime.getAddr($S, 0), (short)104);
 	}
 
 	static void $1() {
 		$runtime.put($C, $runtime.getAddr($S, 0) + 0x1, (byte) 'e');
+		$runtime.repaintConsole($C, 0xFFFFL);
 	}
 
 	static void $2() {
 		$runtime.put($C, $runtime.getAddr($S, 0) + 0x2, (byte) 'l');
+		$runtime.repaintConsole($C, 0xFFFFL);
 	}
 
 	static void $3() {
 		$runtime.put($C, $runtime.getAddr($S, 0) + 0x3, (byte) 'l');
+		$runtime.repaintConsole($C, 0xFFFFL);
 	}
 
 	static void $4() {
 		$runtime.put($C, $runtime.getAddr($S, 0) + 0x4, (byte) 'o');
+		$runtime.repaintConsole($C, 0xFFFFL);
 	}
 
 	static void $5() {

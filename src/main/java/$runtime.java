@@ -118,13 +118,13 @@ public class $runtime {
 
 	static void run(MethodHandle[] instructions, long $E) throws Throwable {
 		$runtime.u.putInt($E, 0);
-		$runtime.u.putInt($runtime.getAddr($E, 4), 0); // exit code
+		$runtime.u.putInt($E + 4, 0); // exit code
 		for (; $runtime.u.getInt($E) < instructions.length; $runtime.u.putInt($E, $runtime.u.getInt($E) + 1)) {
 			int i = $runtime.u.getInt($E);
 			if (i > instructions.length || i < 0) System.exit(0x6C);
 			instructions[i].invokeExact();
 		}
-		System.exit($runtime.u.getInt($runtime.getAddr($E, 4)));
+		System.exit($runtime.u.getInt($E + 4));
 	}
 
 	private static final MethodHandle clr;
@@ -147,9 +147,10 @@ public class $runtime {
 		}
 	}
 
+	@SneakyThrows
 	private static void clrWin() {
 		try {
-			Runtime.getRuntime().exec("cls");
+			new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
 		} catch (Exception ignored) {
 		}
 	}
