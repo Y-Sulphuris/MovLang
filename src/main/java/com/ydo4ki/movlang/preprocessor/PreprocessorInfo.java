@@ -17,10 +17,10 @@ public class PreprocessorInfo {
 	private final long defaultSegSize = 0xFFFF;
 	private final List<SegmentInfo> segmentInfoList = new ArrayList<>();
 	private SegmentInfo executable = new SegmentInfo("E",0xFF);
+	@Deprecated
 	private SegmentInfo stdout = new SegmentInfo("C", 0xFFFF);
 	{
 		segmentInfoList.add(executable);
-		segmentInfoList.add(stdout);
 	}
 }
 

@@ -38,12 +38,15 @@ public class $runtime {
 	static void mov1(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
 		u.putByte(_DstSeg + _DstAddr, u.getByte(_SrcSeg + _SrcAddr));
 	}
+
 	static void mov2(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
 		u.putShort(_DstSeg + _DstAddr, u.getShort(_SrcSeg + _SrcAddr));
 	}
+
 	static void mov4(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
 		u.putInt(_DstSeg + _DstAddr, u.getInt(_SrcSeg + _SrcAddr));
 	}
+
 	static void mov8(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
 		u.putLong(_DstSeg + _DstAddr, u.getLong(_SrcSeg + _SrcAddr));
 	}
@@ -75,8 +78,18 @@ public class $runtime {
 		}
 	}
 
-	static void put(long _Segment, int _Addr, byte[] _Value) {
-		u.copyMemory(_Value, u.arrayBaseOffset(byte[].class), null, _Segment + _Addr, _Value.length);
+	static void put(long _Segment, int _Addr, byte[] _Value, long _Bytes) {
+		final int aLen = _Value.length;
+		if (aLen < _Bytes) {
+			u.copyMemory(_Value, u.arrayBaseOffset(byte[].class), null, _Segment + _Addr, aLen);
+			u.setMemory(_Segment + _Addr + aLen, _Bytes - aLen, (byte) 0);
+		} else {
+			u.copyMemory(_Value, u.arrayBaseOffset(byte[].class), null, _Segment + _Addr, _Bytes);
+		}
+	}
+
+	static void putNulls(long _Segment, int _Addr, long _Bytes) {
+		u.setMemory(_Segment + _Addr, _Bytes, (byte) 0);
 	}
 
 	static int getAddr(long _Segment, int _Addr) {

@@ -7,11 +7,9 @@ import lombok.val;
 import org.objectweb.asm.*;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -25,6 +23,7 @@ public class Generator {
 
 	private final long defaultSegSize = 0xFFFF;
 	private final Map<String, Long> segments = new HashMap<>();
+	private final Map<String, byte[]> biConst = new HashMap<>();
 
 	public Generator(PreprocessorInfo prepInf) {
 		this.prepInf = prepInf;
@@ -110,6 +109,7 @@ public class Generator {
 
 	private void writeStatement0(MethodVisitor mv, StatementTree statement) {
 		Long size = statement.getBytesSize();
+		if (size != null && size.equals(0L)) return;
 		Long bSize = statement.getBitSize();
 		String method;
 		String sign;
@@ -154,7 +154,7 @@ public class Generator {
 			case 1:
 				return "B";
 		}
-		return "[B";
+		return "[BJ";
 	}
 
 	private void loadExpr(MethodVisitor mv, ExprTree src, Long size) {
@@ -195,7 +195,10 @@ public class Generator {
 			mv.visitLdcInsn((long) src.getCh().text.charAt(0));
 		} else if (size == 4 || size == 2 || size == 1) {
 			loadIntValue(mv, src.getCh().text.charAt(0));
-		} else throw new UnsupportedOperationException(String.valueOf(_Size));
+		} else {
+			loadBIConst(mv, BigInteger.valueOf(src.getCh().text.charAt(0)), size);
+			//throw new UnsupportedOperationException(String.valueOf(_Size));
+		}
 	}
 
 	private void loadNumberConst(MethodVisitor mv, NumericLiteralExprTree src, Long _Size) {
@@ -204,7 +207,19 @@ public class Generator {
 			mv.visitLdcInsn(src.getValue().longValueExact());
 		} else if (size == 4 || size == 2 || size == 1) {
 			loadIntValue(mv, src.getValue().intValue());
-		} else throw new UnsupportedOperationException(String.valueOf(_Size));
+		} else {
+			loadBIConst(mv, src.getValue(), size);
+			//throw new UnsupportedOperationException(String.valueOf(_Size));
+		}
+	}
+
+	private void loadBIConst(MethodVisitor mv, BigInteger value, long size) {
+		String name = "bi" + value.toString(16) + "$" + size;
+		byte[] data = value.toByteArray();
+		if (!biConst.containsKey(name))
+			biConst.put(name, data);
+		mv.visitFieldInsn(GETSTATIC, "$program", name, "[B");
+		mv.visitLdcInsn(size);
 	}
 
 	private void loadDereferensing(MethodVisitor mv, DereferenceExprTree dest) {
@@ -270,10 +285,35 @@ public class Generator {
 			writeSegInit(mv, name, segSize, method);
 		}
 
+		for (Map.Entry<String, byte[]> entry : biConst.entrySet()) {
+			String name = entry.getKey();
+			byte[] content = entry.getValue();
+			writeBiConstField(cw, mv, name, content);
+		}
+
 		mv.visitInsn(RETURN);
 		//args will be ignored
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
+	}
+
+	private void writeBiConstField(ClassWriter cw, MethodVisitor mv, String name, byte[] content) {
+		FieldVisitor fv = cw.visitField(ACC_STATIC | ACC_FINAL, name, "[B", null, null);
+		fv.visitEnd();
+
+		loadByteArray(mv, content);
+		mv.visitFieldInsn(PUTSTATIC, "$program", name, "[B");
+	}
+
+	private void loadByteArray(MethodVisitor mv, byte[] content) {
+		loadIntValue(mv, content.length);
+		mv.visitIntInsn(NEWARRAY, T_BYTE);
+		for (int i = 0; i < content.length; i++) {
+			mv.visitInsn(DUP);
+			loadIntValue(mv, i);
+			loadIntValue(mv, content[i]);
+			mv.visitInsn(BASTORE);
+		}
 	}
 
 	private void writeSegInit(MethodVisitor mv, String name, long segSize, String method) {

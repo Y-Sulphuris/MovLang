@@ -11,7 +11,7 @@ import java.io.File;
  */
 public class Token implements Tree {
 	public final TokenType type;
-	public final String text;
+	public String text;
 	public final Location location;
 
 	public Token(TokenType type, String text, int startpos, int endpos, int line, File file) {

@@ -22,7 +22,7 @@ public class $pg_ex {
 	}
 
 	static void $0() {
-		$runtime.put($C, $runtime.getAddr($S, 0), (short)104);
+		$runtime.put($C, $runtime.getAddr($S, 0), new byte[]{0,0,0,0}, 4);
 	}
 
 	static void $1() {
