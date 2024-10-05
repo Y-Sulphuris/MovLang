@@ -1,5 +1,6 @@
 package com.ydo4ki.movlang.codegen;
 
+import com.ydo4ki.movlang.CompilerException;
 import com.ydo4ki.movlang.ast.*;
 import com.ydo4ki.movlang.preprocessor.PreprocessorInfo;
 import com.ydo4ki.movlang.preprocessor.SegmentInfo;
@@ -160,7 +161,10 @@ public class Generator {
 	private void loadExpr(MethodVisitor mv, ExprTree src, Long size) {
 		if (src instanceof DereferenceExprTree) {
 			loadDereferensing(mv, (DereferenceExprTree) src);
-			mv.visitMethodInsn(INVOKESTATIC, "$runtime", "getAddr", "(JI)I");
+			if (size == 4) mv.visitMethodInsn(INVOKESTATIC, "$runtime", "getAddr", "(JI)I");
+			else if (size == 1) {
+				mv.visitMethodInsn(INVOKESTATIC, "$runtime", "get", "(JI)B");
+			} else throw new CompilerException(src.getLocation(), "Illegal size: " + size);
 		} else if (src instanceof NumericLiteralExprTree) {
 			loadNumberConst(mv, (NumericLiteralExprTree) src, size);
 		} else if (src instanceof CharLiteralExprTree) {
@@ -227,7 +231,7 @@ public class Generator {
 		loadExpr(mv, dest.getAddress(), 4L);
 		val offset = dest.getOffset();
 		if (offset != null) {
-			loadExpr(mv, offset, 4L);
+			loadExpr(mv, offset, dest.getOffsetSize()); // default offset size
 			mv.visitInsn(IADD);
 		}
 

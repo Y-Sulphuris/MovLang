@@ -65,8 +65,7 @@ public class Compiler {
 			sourceb.append(str).append('\n');
 		}
 		source = sourceb.toString();
-		val tokens = new Tokenizer().tokenize(source, srcFile);
-		val prepInf = new Preprocessor(tokens).preprocess();
+		val prepInf = new Preprocessor(new Tokenizer().tokenize(source, srcFile)).preprocess();
 		//for (Token token : tokens) {
 		//	System.out.println(token);
 		//}

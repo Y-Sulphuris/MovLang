@@ -118,15 +118,25 @@ public class Parser {
 		ExprTree address = parseExpr();
 		Token plus = null;
 		ExprTree offset = null;
+		long offsetSize = 4;
 		if (token.type == TokenType.PLUS) {
 			plus = token;
 			token = nextToken();
 			offset = parseExpr();
+			if (token.type == TokenType.COLON) {
+				token = nextToken();
+				try {
+					offsetSize = Long.parseUnsignedLong(token.text, 16);
+				} catch (Exception e) {
+					throw new CompilerException(token.getLocation(), "Size expected");
+				}
+				token = nextToken();
+			}
 		}
 		assertToken(TokenType.CLOSE_SQUARE);
 		Token close = token;
 		token = nextToken();
-		return new DereferenceExprTree(segment, open, address, plus, offset, close);
+		return new DereferenceExprTree(segment, open, address, plus, offset, offsetSize, close);
 	}
 
 	private @Nullable LabelTree parseLabel() {

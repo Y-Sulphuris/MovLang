@@ -15,11 +15,15 @@ import java.util.Stack;
 public class PreprocessorInfo {
 	private final Stack<Token> tokens;
 	private final long defaultSegSize = 0xFFFF;
-	private final List<SegmentInfo> segmentInfoList = new ArrayList<>();
+	private final List<SegmentInfo> segmentInfoList;
 	private SegmentInfo executable = new SegmentInfo("E",0xFF);
 	@Deprecated
 	private SegmentInfo stdout = new SegmentInfo("C", 0xFFFF);
-	{
+
+	public PreprocessorInfo(Stack<Token> tokens, List<SegmentInfo> segmentInfoList) {
+		this.tokens = tokens;
+		this.segmentInfoList = segmentInfoList;
+
 		segmentInfoList.add(executable);
 	}
 }

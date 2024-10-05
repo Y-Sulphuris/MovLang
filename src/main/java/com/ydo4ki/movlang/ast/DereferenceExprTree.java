@@ -18,6 +18,7 @@ public class DereferenceExprTree implements LValueExprTree {
 	private final ExprTree address;
 	private final @Nullable Token plus;
 	private final @Nullable ExprTree offset;
+	private final long offsetSize;
 	private final Token close;
 
 	@Override

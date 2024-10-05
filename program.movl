@@ -1,5 +1,6 @@
-#const stdout C
-//#include console
+#def stdout C
+
+#include "inc.movl"
 
 S[0] 5
 
@@ -14,8 +15,9 @@ C[S[0] + 06] 'W'
 C[S[0] + 07] 'o'
 C[S[0] + 08] 'r'
 C[S[0] + 09] 'l'
-stdout[S[0] + 0A] 'd'
-stdout[S[0] + 0B] '!'
+C[S[0] + 0A] 'd'
+C[S[0] + 0B] '!'
+C[S[0] + 0B] 0[inc_table + C[S[0] + 0B] : 1]
 
 C[S[0] + 00] ' '
 C[S[0] + 01] ' '

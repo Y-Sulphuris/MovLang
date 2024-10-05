@@ -95,6 +95,9 @@ public class $runtime {
 	static int getAddr(long _Segment, int _Addr) {
 		return u.getInt(_Segment + _Addr);
 	}
+	static byte get(long _Segment, int _Addr) {
+		return u.getByte(_Segment + _Addr);
+	}
 
 	static long mask(int _Bits1) {
 		return 0xFFFFFFFF_FFFFFFFFL << (64 - _Bits1);
