@@ -1,5 +1,6 @@
 package com.ydo4ki.movlang.ast;
 
+import com.ydo4ki.movlang.CompilerException;
 import com.ydo4ki.movlang.Location;
 import com.ydo4ki.movlang.lexer.Token;
 import lombok.Getter;
@@ -18,10 +19,14 @@ public class NumericLiteralExprTree implements SizeExprTree {
 	public NumericLiteralExprTree(Token literal) {
 		this.literal = literal;
 		String text = literal.text;
-		if (text.charAt(0) == '_') {
-			this.value = new BigInteger(text.substring(1));
-		} else {
-			this.value = new BigInteger(text, 16);
+		try {
+			if (text.charAt(0) == '_') {
+				this.value = new BigInteger(text.substring(1));
+			} else {
+				this.value = new BigInteger(text, 16);
+			}
+		} catch (NumberFormatException e) {
+			throw new CompilerException(literal.getLocation(), "Number expected", e);
 		}
 	}
 

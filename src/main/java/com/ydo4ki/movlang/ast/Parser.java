@@ -127,6 +127,8 @@ public class Parser {
 				token = nextToken();
 				try {
 					offsetSize = Long.parseUnsignedLong(token.text, 16);
+					if (offsetSize > 4)
+						throw new CompilerException(token.getLocation(), "Size expected (max value = address size)");
 				} catch (Exception e) {
 					throw new CompilerException(token.getLocation(), "Size expected");
 				}

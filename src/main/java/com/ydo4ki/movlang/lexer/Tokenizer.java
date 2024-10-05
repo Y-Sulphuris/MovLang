@@ -130,13 +130,19 @@ public class Tokenizer {
 			int startpos = pos - 1;
 			ch = nextChar();
 			StringBuilder builder = new StringBuilder();
+			TokenType type = TokenType.DIRECTIVE;
 			while (isValidNameChar(ch)) {
 				builder.append(ch);
 				ch = nextChar();
+				if (ch == '#') {
+					ch = nextChar();
+					type = TokenType.DIRECTIVE_ARG;
+					break;
+				}
 			}
 			pos--;
 			String value = builder.toString();
-			return new Token(TokenType.DIRECTIVE, value, startpos, pos, line, file);
+			return new Token(type, value, startpos, pos, line, file);
 		}
 
 		// operators
@@ -159,6 +165,24 @@ public class Tokenizer {
 				break;
 			case ']':
 				type = TokenType.CLOSE_SQUARE;
+				break;
+			case '(':
+				type = TokenType.OPEN_ROUND;
+				break;
+			case ')':
+				type = TokenType.CLOSE_ROUND;
+				break;
+			case '<':
+				type = TokenType.OPEN_TRIANGLE;
+				break;
+			case '>':
+				type = TokenType.CLOSE_TRIANGLE;
+				break;
+			case '{':
+				type = TokenType.OPEN;
+				break;
+			case '}':
+				type = TokenType.CLOSE;
 				break;
 			default:
 				type = TokenType.ERROR;

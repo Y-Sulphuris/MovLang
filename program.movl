@@ -1,37 +1,40 @@
 #def stdout C
 
-#include "inc.movl"
+#include inc
 
-S[0] 5
+S[0] 0
 
 hello:
-C[S[0] + 00] 'H'
-C[S[0] + 01] 'e'
-C[S[0] + 02] 'l'
-C[S[0] + 03] 'l'
-C[S[0] + 04] 'o'
+C[S[0]] 'H'
+inc S[0]
+C[S[0]] 'e'
+inc S[0]
+C[S[0]] 'l'
+S[0] 0[inc_table + S[0]]
+C[S[0]] 'l'
+S[0] 0[inc_table + S[0]]
+C[S[0]] 'o'
+S[0] 0[inc_table + S[0]]
 
-C[S[0] + 06] 'W'
-C[S[0] + 07] 'o'
-C[S[0] + 08] 'r'
-C[S[0] + 09] 'l'
-C[S[0] + 0A] 'd'
-C[S[0] + 0B] '!'
-C[S[0] + 0B] 0[inc_table + C[S[0] + 0B] : 1]
+C[S[0]] 'W'
+S[0] 0[inc_table + S[0]]
+C[S[0]] 'o'
+S[0] 0[inc_table + S[0]]
+C[S[0]] 'r'
+S[0] 0[inc_table + S[0]]
+C[S[0]] 'l'
+S[0] 0[inc_table + S[0]]
+C[S[0]] 'd'
+S[0] 0[inc_table + S[0]]
+C[S[0]] '!'
+S[0] 0[inc_table + S[0]]
 
-C[S[0] + 00] ' '
-C[S[0] + 01] ' '
-C[S[0] + 02] ' '
-C[S[0] + 03] ' '
-C[S[0] + 04] ' '
-C[S[0] + 05] ' '
-C[S[0] + 06] ' '
-C[S[0] + 07] ' '
-C[S[0] + 08] ' '
-C[S[0] + 09] ' '
-C[S[0] + 0A] ' '
-C[S[0] + 0B] ' '
-C[S[0] + 0C] ' '
+0[0] C[S[0] + 0B]
+0[1] 0 : 3
+C[S[0]] 0[inc_table + R[0]]
+S[0] 0[inc_table + S[0]]
+// C[S[0] + 0B] 0[inc_table + R[0] : 1]
+
 
 
 E[0] @hello

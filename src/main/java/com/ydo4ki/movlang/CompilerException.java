@@ -1,9 +1,13 @@
 package com.ydo4ki.movlang;
 
+import com.ydo4ki.movlang.lexer.Token;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
+import java.util.Stack;
 
 /**
  * @author Sulphuris
@@ -14,6 +18,9 @@ public class CompilerException extends RuntimeException {
 	@Setter
 	private Location location;
 	private final String rawMessage;
+
+	@Setter
+	@Nullable private Stack<Token> tokens = Compiler.getFinalTokens();
 
 
 	public CompilerException(Location location, String message) {
@@ -47,14 +54,16 @@ public class CompilerException extends RuntimeException {
 		this.rawMessage = rawMessage;
 	}
 
+	@SneakyThrows // вот это офигенная идея
 	@Override
 	public void printStackTrace(PrintStream err) {
 		String filename = location.getSourceFile().getAbsolutePath();
 		filename = filename.substring(0).replaceAll("\\|/", ".");
-		System.err.println(getErrorDescription(this, filename, Compiler.source));
+		String source = Compiler.getSource(location.getSourceFile());
+		System.err.println(getErrorDescription(this, filename, source));
 		if (this.getCause() != this && this.getCause() instanceof CompilerException) {
 			System.err.println("for:");
-			System.err.println(getErrorDescription((CompilerException) this.getCause(), filename, Compiler.source));
+			System.err.println(getErrorDescription((CompilerException) this.getCause(), filename, source));
 		}
 		super.printStackTrace(err);
 	}
@@ -68,11 +77,27 @@ public class CompilerException extends RuntimeException {
 
 		if (e.getLocation() != null) {
 			String line;
-			try {
-				line = source.split("\n")[e.getLocation().getStartLine() - 1];
-			} catch (ArrayIndexOutOfBoundsException ee) {
-				line = " ";
-			}
+			/*if (e.tokens == null) {*/
+				try {
+					line = source.split("\n")[e.getLocation().getStartLine() - 1];
+				} catch (ArrayIndexOutOfBoundsException ee) {
+					line = " ";
+				}
+			/*} else {
+				StringBuilder lb = new StringBuilder();
+				for (int i = 0; i < e.tokens.size(); i++) {
+					Token t = e.tokens.get(i);
+					if (!Location.lineIntersects(t.getLocation(), e.getLocation())) {
+						continue;
+					}
+					while (Location.lineIntersects(t.getLocation(), e.getLocation())) {
+						lb.append(t.text).append(' ');
+						t = e.tokens.get(++i);
+					}
+					break;
+				}
+				line = lb.toString();
+			}*/
 
 			int linePos = source.substring(0, e.getLocation().getStartPos()).lastIndexOf('\n');
 			int errStart = e.getLocation().getStartPos() - linePos;

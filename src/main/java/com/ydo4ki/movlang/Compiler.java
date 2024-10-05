@@ -6,13 +6,18 @@ import com.ydo4ki.movlang.codegen.Generator;
 import com.ydo4ki.movlang.lexer.Token;
 import com.ydo4ki.movlang.lexer.Tokenizer;
 import com.ydo4ki.movlang.preprocessor.Preprocessor;
+import lombok.Getter;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * @author Sulphuris
@@ -59,17 +64,33 @@ public class Compiler {
 
 	public static String source;
 
-	private void compile(File outputFile) throws IOException {
-		StringBuilder sourceb = new StringBuilder();
-		for (String str : Files.readAllLines(srcFile.toPath())) {
-			sourceb.append(str).append('\n');
+	private static final Map<File, String> sources = new HashMap<>();
+	public static String getSource(File srcFile) throws IOException {
+		String src = sources.get(srcFile);
+		if (src == null) {
+			StringBuilder sourceb = new StringBuilder();
+			for (String str : Files.readAllLines(srcFile.toPath())) {
+				sourceb.append(str).append('\n');
+			}
+			src = sourceb.toString();
+			sources.put(srcFile, src);
 		}
-		source = sourceb.toString();
+		return src;
+	}
+
+	@Getter
+	@Nullable
+	private static Stack<Token> finalTokens;
+
+
+	private void compile(File outputFile) throws IOException {
+		source = getSource(srcFile);
 		val prepInf = new Preprocessor(new Tokenizer().tokenize(source, srcFile)).preprocess();
 		//for (Token token : tokens) {
 		//	System.out.println(token);
 		//}
-		val cu = new Parser(prepInf.getTokens(), srcFile.getName()).parse();
+		finalTokens = prepInf.getTokens();
+		val cu = new Parser(finalTokens, srcFile.getName()).parse();
 		System.out.println("\nStatements:\n");
 		for (StatementTree statement : cu.getStatements()) {
 			System.out.println(statement);

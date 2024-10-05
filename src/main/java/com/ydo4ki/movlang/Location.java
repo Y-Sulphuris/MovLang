@@ -26,4 +26,9 @@ public final class Location {
 			return start;
 		return new Location(start.startPos,end.endPos,start.startLine,end.endLine, end.getSourceFile());
 	}
+
+	public static boolean lineIntersects(Location a, Location b) {
+		if (!a.getSourceFile().getName().equals(b.getSourceFile().getName())) return false;
+		return !(a.startLine > b.endLine || a.endLine < b.startLine);
+	}
 }
