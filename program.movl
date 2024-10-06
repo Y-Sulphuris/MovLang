@@ -2,6 +2,11 @@
 
 #include inc
 
+#segment S FF
+
+#rule implicit_seg 0
+
+
 S[0] 0
 
 hello:

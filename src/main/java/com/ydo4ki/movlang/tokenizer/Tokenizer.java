@@ -1,4 +1,4 @@
-package com.ydo4ki.movlang.lexer;
+package com.ydo4ki.movlang.tokenizer;
 
 import java.io.File;
 import java.util.Stack;
@@ -183,6 +183,12 @@ public class Tokenizer {
 				break;
 			case '}':
 				type = TokenType.CLOSE;
+				break;
+			case '.':
+				type = TokenType.DOT;
+				break;
+			case ',':
+				type = TokenType.COMMA;
 				break;
 			default:
 				type = TokenType.ERROR;

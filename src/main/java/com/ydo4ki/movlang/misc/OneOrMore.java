@@ -2,6 +2,7 @@ package com.ydo4ki.movlang.misc;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -18,14 +19,25 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		return new One<>(value);
 	}
 
-	//@SafeVarargs
-	public static <T> OneOrMore<T> of(T[] value) {
+	public static <T> OneOrMore<T> of(OneOrMore<T> oom, T value) {
+		ArrayList<T> list = new ArrayList<>();
+		list.add(value);
+		for (T t : oom) {
+			list.add(t);
+		}
+		return of(list);
+	}
+
+	@SafeVarargs
+	public static <T> OneOrMore<T> of(T... value) {
 		return new MoreA<>(value);
 	}
 
 	public static <T> OneOrMore<T> of(Collection<T> value) {
 		return new MoreC<>(value);
 	}
+
+	public abstract int count();
 
 	static class One<T> extends OneOrMore<T> {
 		private final T value;
@@ -39,6 +51,7 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		public Iterator<T> iterator() {
 			return new Iterator<T>() {
 				boolean hasNext = true;
+
 				@Override
 				public boolean hasNext() {
 					return hasNext;
@@ -56,10 +69,16 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		public String toString() {
 			return String.valueOf(value);
 		}
+
+		@Override
+		public int count() {
+			return 1;
+		}
 	}
 
 	static class MoreA<T> extends OneOrMore<T> {
 		final T[] values;
+
 		MoreA(T[] values) {
 			this.values = values;
 		}
@@ -69,6 +88,7 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		public Iterator<T> iterator() {
 			return new Iterator<T>() {
 				int i = 0;
+
 				@Override
 				public boolean hasNext() {
 					return i <= values.length;
@@ -85,7 +105,13 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		public String toString() {
 			return Arrays.toString(values);
 		}
+
+		@Override
+		public int count() {
+			return values.length;
+		}
 	}
+
 	@SuppressWarnings("unchecked")
 	static class MoreC<T> extends OneOrMore<T> {
 		final Object[] values;
@@ -100,6 +126,7 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		public Iterator<T> iterator() {
 			return new Iterator<T>() {
 				int i = 0;
+
 				@Override
 				public boolean hasNext() {
 					return i <= values.length;
@@ -107,7 +134,7 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 
 				@Override
 				public T next() {
-					return (T)values[i++];
+					return (T) values[i++];
 				}
 			};
 		}
@@ -115,6 +142,11 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 		@Override
 		public String toString() {
 			return Arrays.toString(values);
+		}
+
+		@Override
+		public int count() {
+			return values.length;
 		}
 	}
 

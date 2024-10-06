@@ -1,0 +1,33 @@
+#def NUL 00	// null
+#def SOH 01	// start of header
+#def STX 02	// start of text
+#def ETX 03	// end of text
+#def EOT 04	// end of transmission
+#def ENQ 05	// enquiry
+#def ACK 06	// acknowledge
+#def BEL 07	// bell
+#def BS  08	// backspace
+#def HT  09	// horizontal tab
+#def LF  0A	// line feed - new line
+#def VT  0B	// vertical tab
+#def FF  0C	// form feed - new page
+#def CR  0D	// carriage return
+#def SO  0E	// shift out
+#def SI  0F	// shift in
+#def DLE 10	// data link escape
+#def DC1 11	// device control 1
+#def DC2 12	// device control 2
+#def DC3 13	// device control 3
+#def DC4 14	// device control 4
+#def NAK 15	// negative acknowledge
+#def SYN 16	// synchronous idle
+#def ETB 17	// end of transmission block
+#def CAN 18	// cancel
+#def EM  19	// end of medium
+#def SUB 1A	// substitute
+#def ESC 1B	// escape
+#def FS  1C	// file separator
+#def GS  1D	// group separator
+#def RS  1E	// record separator
+#def US  1F	// unit separator
+#def DEL 7F	// delete

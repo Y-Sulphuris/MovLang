@@ -1,9 +1,9 @@
 package com.ydo4ki.movlang.ast;
 
 import com.ydo4ki.movlang.CompilerException;
-import com.ydo4ki.movlang.lexer.Token;
-import com.ydo4ki.movlang.lexer.TokenType;
-import com.ydo4ki.movlang.lexer.UnexpectedTokenException;
+import com.ydo4ki.movlang.tokenizer.Token;
+import com.ydo4ki.movlang.tokenizer.TokenType;
+import com.ydo4ki.movlang.tokenizer.UnexpectedTokenException;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
 

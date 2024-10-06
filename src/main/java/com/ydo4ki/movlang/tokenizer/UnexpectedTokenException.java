@@ -1,4 +1,4 @@
-package com.ydo4ki.movlang.lexer;
+package com.ydo4ki.movlang.tokenizer;
 
 import com.ydo4ki.movlang.CompilerException;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.ydo4ki.movlang.ast;
 
 import com.ydo4ki.movlang.Location;
-import com.ydo4ki.movlang.lexer.Token;
+import com.ydo4ki.movlang.tokenizer.Token;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;

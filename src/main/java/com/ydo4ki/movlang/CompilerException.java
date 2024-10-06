@@ -1,6 +1,6 @@
 package com.ydo4ki.movlang;
 
-import com.ydo4ki.movlang.lexer.Token;
+import com.ydo4ki.movlang.tokenizer.Token;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;

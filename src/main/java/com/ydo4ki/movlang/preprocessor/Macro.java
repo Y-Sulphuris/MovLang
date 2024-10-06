@@ -1,9 +1,8 @@
 package com.ydo4ki.movlang.preprocessor;
 
-import com.ydo4ki.movlang.lexer.Token;
+import com.ydo4ki.movlang.tokenizer.Token;
 import lombok.Data;
 
-import java.util.Collection;
 import java.util.List;
 
 // весь код был атличьна стырен с C32 и не переделан

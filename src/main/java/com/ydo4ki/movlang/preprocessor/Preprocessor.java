@@ -3,7 +3,7 @@ package com.ydo4ki.movlang.preprocessor;
 import com.ydo4ki.movlang.Compiler;
 import com.ydo4ki.movlang.CompilerException;
 import com.ydo4ki.movlang.Location;
-import com.ydo4ki.movlang.lexer.*;
+import com.ydo4ki.movlang.tokenizer.*;
 import lombok.val;
 
 import java.io.File;
@@ -61,7 +61,7 @@ public class Preprocessor {
 			wasAnythingIncluded = false;
 			for (curTok = 0; hasNextToken(); ) {
 				Token token = nextToken();
-				if (token.type == TokenType.DIRECTIVE && token.text.equals("include")) {
+				if (token.type == TokenType.DIRECTIVE && token.text.equalsIgnoreCase("include")) {
 					try {
 						token = nextToken();
 						String fileName = token.text;
@@ -127,14 +127,13 @@ public class Preprocessor {
 		Map<String, List<Token>> args = new HashMap<>();
 		ArrayList<BracketsType> brackets = new ArrayList<>();
 
-
 		balance(brackets, token);
 		List<Token> macroText = macro.getMacroText();
 		for (int i = 0; i < macroText.size(); i++) {
 			Token macroToken = macroText.get(i);
 			token = nextToken();
-			System.out.println("mt: " + macroToken);
-			System.out.println("t: " + token);
+			//System.out.println("mt: " + macroToken);
+			//System.out.println("t: " + token);
 			balance(brackets, token);
 			if (macroToken.type == TokenType.DIRECTIVE_ARG) {
 				int startBalance = brackets.size();
@@ -142,15 +141,15 @@ public class Preprocessor {
 				for (; ; ) {
 					addArgsToken(args, macroToken, token);
 					token = nextToken();
-					System.out.println("t(a): " + token);
+					//System.out.println("t(a): " + token);
 					if (token.isBracket() && (i == macroText.size() - 1 || token.type == macroText.get(i + 1).type)) {
 						curTok--;
-						System.out.println(1);
+						//System.out.println(1);
 						break;
 					}
 					if (brackets.size() == startBalance - 1 || startBalance == 0) {
 						curTok--;
-						System.out.println(2);
+						//System.out.println(2);
 						break;
 					}
 					balance(brackets, token);
@@ -161,9 +160,9 @@ public class Preprocessor {
 				}
 			}
 		}
-		for (Map.Entry<String, List<Token>> entry : args.entrySet()) {
+		/*for (Map.Entry<String, List<Token>> entry : args.entrySet()) {
 			System.out.println(entry.getKey() + " -> " + entry.getValue());
-		}
+		}*/
 
 		if (!brackets.isEmpty()) disbalance(brackets, token.getLocation());
 
@@ -215,21 +214,30 @@ public class Preprocessor {
 			Token token = nextToken();
 			if (token.type == TokenType.COMMENT) continue;
 			if (token.type == TokenType.DIRECTIVE) {
-				switch (token.text) {
+				switch (token.text.toLowerCase(Locale.ROOT)) {
 					case "def": {
 						token = nextToken();
 						String alias = token.text;
 						token = nextToken();
 						putChecked(defs, alias, token, token.getLocation());
 						defs.put(alias, token);
-					}
-					break;
+					} break;
 					case "macro": {
 						Macro macro = parseMacro();
 						//System.out.println(macro);
 						putChecked(macros, macro.getName().text, macro, token.getLocation());
-					}
-					break;
+					} break;
+					case "segment": {
+						token = nextToken();
+						String seg = token.text;
+						token = nextToken();
+						try {
+							long size = Long.parseUnsignedLong(token.text, 16);
+							segmentInfoList.add(new SegmentInfo(seg, size));
+						} catch (NumberFormatException e) {
+							throw new CompilerException(token.getLocation(), "Segment size expected", e);
+						}
+					} break;
 					default:
 						throw new CompilerException(token.getLocation(), "unknown directive: " + token.text);
 				}
