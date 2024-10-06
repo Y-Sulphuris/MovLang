@@ -13,19 +13,21 @@ import java.util.Stack;
 @Data
 public class PreprocessorInfo {
 	private final Stack<Token> tokens;
-	private final long defaultSegSize = 0xFFFF;
 	private final List<SegmentInfo> segmentInfoList;
 	private SegmentInfo executable = new SegmentInfo("E",0xFF);
 	@Deprecated
 	private SegmentInfo stdout = new SegmentInfo("C", 0xFFFF);
 
-	private long default_seg_size = 0xFFFF;
-	private int address_size = 0x4;
-	private boolean implicit_seg = true;
+	private final long default_seg_size;
+	private final long address_size;
+	private final boolean implicit_seg;
 
-	public PreprocessorInfo(Stack<Token> tokens, List<SegmentInfo> segmentInfoList) {
+	public PreprocessorInfo(Stack<Token> tokens, List<SegmentInfo> segmentInfoList, long defaultSegSize, int addressSize, boolean implicitSeg) {
 		this.tokens = tokens;
 		this.segmentInfoList = segmentInfoList;
+		default_seg_size = defaultSegSize;
+		address_size = addressSize;
+		implicit_seg = implicitSeg;
 
 		segmentInfoList.add(executable);
 	}

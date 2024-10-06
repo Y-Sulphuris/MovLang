@@ -40,13 +40,16 @@ public class Preprocessor {
 		return curTok < srcTokens.size();
 	}
 
+	private long default_seg_size = 0xFFFF;
+	private int address_size = 0x4;
+	private boolean implicit_seg = true;
 
 	public PreprocessorInfo preprocess() {
 		includeFiles();
 		readMacrosAndDirectives();
 		applyMacros();
 		readAndApplyDefs();
-		return new PreprocessorInfo(newTokens, segmentInfoList);
+		return new PreprocessorInfo(newTokens, segmentInfoList, default_seg_size, address_size, implicit_seg);
 	}
 
 	private void readAndApplyDefs() {
@@ -193,9 +196,7 @@ public class Preprocessor {
 			if (unfoldToken.type == TokenType.DIRECTIVE_ARG) {
 				val ts = args.get(unfoldToken.text);
 				if (ts == null) throw new CompilerException(unfoldToken.getLocation(), "Unknown macro argument");
-				for (Token t : ts) {
-					newTokens.add(t);
-				}
+				newTokens.addAll(ts);
 			} else {
 				newTokens.add(unfoldToken.updateLocation(token.getLocation()));
 			}
@@ -249,12 +250,47 @@ public class Preprocessor {
 							throw new CompilerException(token.getLocation(), "Segment size expected", e);
 						}
 					} break;
+					case "rule": {
+						token = nextToken();
+						String rule = token.text;
+						token = nextToken();
+						String value = token.text;
+						try {
+							switch (rule) {
+								case "default_seg_size": {
+									default_seg_size = Long.parseUnsignedLong(value, 16);
+								} break;
+								case "address_size": {
+									address_size = Integer.parseUnsignedInt(value, 16);
+									switch (address_size) {
+										case 1:
+										case 2:
+										case 4:
+										case 8:
+											break;
+										default:
+											throw new CompilerException(token.getLocation(), "Invalid address size: " + address_size);
+									}
+								} break;
+								case "implicit_seg": {
+									int val = Integer.parseUnsignedInt(value, 16);
+									if (val != 0 && val != 1)
+										throw new CompilerException(token.getLocation(), "Invalid value: " + val + "(0 or 1 expected)");
+									implicit_seg = val == 1;
+								} break;
+							}
+						} catch (CompilerException e) {
+							throw e;
+						} catch (Exception e) {
+							throw new CompilerException(token.getLocation(), "Cannot parse rule", e);
+						}
+					} break;
 					case "def":
 					case "undef":
 						newTokens.add(token); // pass
 						break;
 					default:
-						throw new CompilerException(token.getLocation(), "unknown directive: " + token.text);
+						throw new CompilerException(token.getLocation(), "unknown directive: #" + token.text);
 				}
 			} else {
 				newTokens.add(token);

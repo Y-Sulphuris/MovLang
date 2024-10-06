@@ -1,17 +1,19 @@
 #def stdout C
+#segment C FFFF
 
 #include inc
 
+
+#rule implicit_seg 1
+
 #segment S FF
-
-//#rule implicit_seg 0
-
+#segment 0 FFFF
+#segment R FFFF
 
 S[0] 0
 
 hello:
 stdout[S[0]] 'H'
-#undef stdout
 inc S[0+5]
 stdout[S[0]] 'e'
 inc S[0]

@@ -22,7 +22,6 @@ public class Generator {
 
 	private final PreprocessorInfo prepInf;
 
-	private final long defaultSegSize = 0xFFFF;
 	private final Map<String, Long> segments = new HashMap<>();
 	private final Map<String, byte[]> biConst = new HashMap<>();
 
@@ -109,7 +108,7 @@ public class Generator {
 	}
 
 	private void writeStatement0(MethodVisitor mv, StatementTree statement) {
-		Long size = statement.getBytesSize();
+		Long size = statement.getBytesSize(prepInf.getAddress_size());
 		if (size != null && size.equals(0L)) return;
 		Long bSize = statement.getBitSize();
 		String method;
@@ -228,7 +227,7 @@ public class Generator {
 
 	private void loadDereferensing(MethodVisitor mv, DereferenceExprTree dest) {
 		mv.visitFieldInsn(GETSTATIC, "$program", "$" + dest.getSegment().text, "J");
-		loadExpr(mv, dest.getAddress(), 4L);
+		loadExpr(mv, dest.getAddress(), prepInf.getAddress_size());
 		val offset = dest.getOffset();
 		if (offset != null) {
 			loadExpr(mv, offset, dest.getOffsetSize()); // default offset size
@@ -237,7 +236,8 @@ public class Generator {
 
 		String name = dest.getSegment().text;
 		if (!segments.containsKey(name)) {
-			segments.put(name, defaultSegSize);
+			if (prepInf.isImplicit_seg()) throw new CompilerException(dest.getLocation(), "Unknown segment: " + name);
+			segments.put(name, prepInf.getDefault_seg_size());
 		}
 	}
 
