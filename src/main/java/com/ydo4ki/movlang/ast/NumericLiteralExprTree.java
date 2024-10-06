@@ -3,6 +3,7 @@ package com.ydo4ki.movlang.ast;
 import com.ydo4ki.movlang.CompilerException;
 import com.ydo4ki.movlang.Location;
 import com.ydo4ki.movlang.tokenizer.Token;
+import com.ydo4ki.movlang.tokenizer.UnexpectedTokenException;
 import lombok.Getter;
 
 import java.math.BigInteger;
@@ -26,7 +27,7 @@ public class NumericLiteralExprTree implements SizeExprTree {
 				this.value = new BigInteger(text, 16);
 			}
 		} catch (NumberFormatException e) {
-			throw new CompilerException(literal.getLocation(), "Number expected", e);
+			throw new UnexpectedTokenException(literal, "Number expected", e);
 		}
 	}
 

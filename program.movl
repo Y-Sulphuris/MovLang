@@ -4,15 +4,16 @@
 
 #segment S FF
 
-#rule implicit_seg 0
+//#rule implicit_seg 0
 
 
 S[0] 0
 
 hello:
-C[S[0]] 'H'
+stdout[S[0]] 'H'
+#undef stdout
 inc S[0+5]
-C[S[0]] 'e'
+stdout[S[0]] 'e'
 inc S[0]
 C[S[0]] 'l'
 S[0] 0[inc_table + S[0]]

@@ -20,15 +20,8 @@ public class Preprocessor {
 		this.srcTokens = srcTokens;
 	}
 
-	private final Map<String, Token> defs = new HashMap<>();
 	private final Map<String, Macro> macros = new HashMap<>();
 	private final List<SegmentInfo> segmentInfoList = new ArrayList<>();
-
-	private Token getDef(Token token) {
-		if (token.type == TokenType.IDENTIFIER || token.type == TokenType.NUMBER)
-			return defs.get(token.text);
-		return null;
-	}
 
 
 	private Stack<Token> srcTokens;
@@ -50,9 +43,40 @@ public class Preprocessor {
 
 	public PreprocessorInfo preprocess() {
 		includeFiles();
-		readDirectives();
-		applyDirectives();
+		readMacrosAndDirectives();
+		applyMacros();
+		readAndApplyDefs();
 		return new PreprocessorInfo(newTokens, segmentInfoList);
+	}
+
+	private void readAndApplyDefs() {
+		final Map<String, Token> defs = new HashMap<>();
+		for (curTok = 0; hasNextToken(); ) {
+			Token token = nextToken();
+			if (token.type == TokenType.DIRECTIVE) {
+				switch (token.text) {
+					case "def": {
+						token = nextToken();
+						String alias = token.text;
+						token = nextToken();
+						putChecked(defs, alias, token, token.getLocation());
+					} break;
+					case "undef": {
+						token = nextToken();
+						String alias = token.text;
+						defs.remove(alias);
+					} break;
+				}
+			} else {
+				Token nn = null;
+				if (token.type == TokenType.IDENTIFIER || token.type == TokenType.NUMBER)
+					nn = defs.get(token.text);
+				if (nn != null) {
+					token = nn.updateLocation(token.location);
+				}
+				newTokens.add(token);
+			}
+		}
 	}
 
 	private void includeFiles() {
@@ -84,19 +108,18 @@ public class Preprocessor {
 		} while (wasAnythingIncluded);
 	}
 
-	private void applyDirectives() {
+	private void applyMacros() {
 		for (curTok = 0; hasNextToken(); ) {
 			Token token = nextToken();
-			Token nn = getDef(token);
 			Macro macro;
-			if (nn != null) {
-				token = nn.updateLocation(token.location);
-			} else if ((macro = macros.get(token.text)) != null) {
+			if ((macro = macros.get(token.text)) != null) {
 				applyMacro(macro, token);
 				continue;
 			}
 			newTokens.add(token);
 		}
+		srcTokens = newTokens;
+		newTokens = new Stack<>();
 	}
 
 	private void popOrDisbalance(ArrayList<BracketsType> brackets, BracketsType pop, Location location) {
@@ -171,14 +194,10 @@ public class Preprocessor {
 				val ts = args.get(unfoldToken.text);
 				if (ts == null) throw new CompilerException(unfoldToken.getLocation(), "Unknown macro argument");
 				for (Token t : ts) {
-					Token nn = getDef(t);
-					if (nn != null) t = nn.updateLocation(t.getLocation());
 					newTokens.add(t);
 				}
 			} else {
-				Token nn = getDef(unfoldToken);
-				if (nn != null) unfoldToken = nn.updateLocation(unfoldToken.getLocation());
-				newTokens.add(unfoldToken);
+				newTokens.add(unfoldToken.updateLocation(token.getLocation()));
 			}
 		}
 	}
@@ -204,24 +223,16 @@ public class Preprocessor {
 	}
 
 	private <T> void putChecked(Map<String, T> target, String name, T value, Location location) {
-		if (defs.containsKey(name)) throw new CompilerException(location, "There is already an alias with that name");
 		if (macros.containsKey(name)) throw new CompilerException(location, "There is already a macro with that name");
 		target.put(name, value);
 	}
 
-	private void readDirectives() {
+	private void readMacrosAndDirectives() {
 		for (curTok = 0; hasNextToken(); ) {
 			Token token = nextToken();
 			if (token.type == TokenType.COMMENT) continue;
 			if (token.type == TokenType.DIRECTIVE) {
 				switch (token.text.toLowerCase(Locale.ROOT)) {
-					case "def": {
-						token = nextToken();
-						String alias = token.text;
-						token = nextToken();
-						putChecked(defs, alias, token, token.getLocation());
-						defs.put(alias, token);
-					} break;
 					case "macro": {
 						Macro macro = parseMacro();
 						//System.out.println(macro);
@@ -238,6 +249,10 @@ public class Preprocessor {
 							throw new CompilerException(token.getLocation(), "Segment size expected", e);
 						}
 					} break;
+					case "def":
+					case "undef":
+						newTokens.add(token); // pass
+						break;
 					default:
 						throw new CompilerException(token.getLocation(), "unknown directive: " + token.text);
 				}

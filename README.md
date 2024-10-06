@@ -1,10 +1,10 @@
 # MovLang
-## Currently not in working condition
+## Unfinished
 An esoteric programming language that has only one instruction: copy memory<br>
 Command syntax:
 ```
 [<label>:]
-<dest> <value>[:<size|bit_size>]
+<dest> <value>[size]
 ```
 
 Dereferensing syntax:
@@ -12,6 +12,11 @@ Dereferensing syntax:
 <segment>'['<value>[+<offset>|<bit_offset>]']'
 ```
 '\n' doesn't matter and play the same role as whitespace
+
+Size syntax:
+```
+:<size_in_bytes|^size_in_bits>
+```
 
 Examples:
 ```d

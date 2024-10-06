@@ -47,7 +47,7 @@ public class Parser {
 		try {
 			token = nextToken();
 		} catch (CompilerException e) {
-			return null;
+			throw e; // ??
 		}
 		this.statements = new ArrayList<>();
 		while (token.type != TokenType.EOF) {
