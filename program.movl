@@ -6,7 +6,7 @@ S[0] 0
 
 hello:
 C[S[0]] 'H'
-inc S[0]
+inc S[0+5]
 C[S[0]] 'e'
 inc S[0]
 C[S[0]] 'l'

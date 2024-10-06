@@ -3,11 +3,7 @@ package com.ydo4ki.movlang.preprocessor;
 import com.ydo4ki.movlang.Compiler;
 import com.ydo4ki.movlang.CompilerException;
 import com.ydo4ki.movlang.Location;
-import com.ydo4ki.movlang.lexer.Token;
-import com.ydo4ki.movlang.lexer.TokenType;
-import com.ydo4ki.movlang.lexer.Tokenizer;
-import com.ydo4ki.movlang.lexer.UnexpectedTokenException;
-import com.ydo4ki.movlang.misc.OneOrMore;
+import com.ydo4ki.movlang.lexer.*;
 import lombok.val;
 
 import java.io.File;
@@ -28,17 +24,27 @@ public class Preprocessor {
 	private final Map<String, Macro> macros = new HashMap<>();
 	private final List<SegmentInfo> segmentInfoList = new ArrayList<>();
 
+	private Token getDef(Token token) {
+		if (token.type == TokenType.IDENTIFIER || token.type == TokenType.NUMBER)
+			return defs.get(token.text);
+		return null;
+	}
+
 
 	private Stack<Token> srcTokens;
 	private Stack<Token> newTokens = new Stack<>();
-	private ListIterator<Token> iterator;
+	private int curTok;
 
 	private Token nextToken() {
-		return iterator.next();
+		return srcTokens.get(curTok++);
+	}
+
+	private Token prevToken() {
+		return srcTokens.get(--curTok);
 	}
 
 	private boolean hasNextToken() {
-		return iterator.hasNext();
+		return curTok < srcTokens.size();
 	}
 
 
@@ -53,7 +59,7 @@ public class Preprocessor {
 		boolean wasAnythingIncluded;
 		do {
 			wasAnythingIncluded = false;
-			for (iterator = srcTokens.listIterator(); hasNextToken(); ) {
+			for (curTok = 0; hasNextToken(); ) {
 				Token token = nextToken();
 				if (token.type == TokenType.DIRECTIVE && token.text.equals("include")) {
 					try {
@@ -79,41 +85,122 @@ public class Preprocessor {
 	}
 
 	private void applyDirectives() {
-		for (iterator = srcTokens.listIterator(); hasNextToken(); ) {
+		for (curTok = 0; hasNextToken(); ) {
 			Token token = nextToken();
-			Token nn = defs.get(token.text);
+			Token nn = getDef(token);
 			Macro macro;
 			if (nn != null) {
 				token = nn.updateLocation(token.location);
 			} else if ((macro = macros.get(token.text)) != null) {
-				Map<String, OneOrMore<Token>> args = new HashMap<>();
-				for (Token macroToken : macro.getMacroText()) {
+				applyMacro(macro, token);
+				continue;
+			}
+			newTokens.add(token);
+		}
+	}
+
+	private void popOrDisbalance(ArrayList<BracketsType> brackets, BracketsType pop, Location location) {
+		if (!brackets.isEmpty()) {
+			BracketsType removed = brackets.remove(brackets.size() - 1);
+			if (removed == pop) return;
+			brackets.add(removed);
+		}
+		disbalance(brackets, location);
+	}
+
+	private void disbalance(ArrayList<BracketsType> brackets, Location location) throws CompilerException {
+		StringBuilder expected = new StringBuilder();
+		for (int i = brackets.size() - 1; i >= 0; i--) {
+			BracketsType bracket = brackets.get(i);
+			expected.append(bracket.close);
+		}
+		throw new CompilerException(location, "Brackets disbalance: '" + expected + "' expected");
+	}
+
+	private void addArgsToken(Map<String, List<Token>> args, Token macroToken, Token token) {
+		List<Token> list = args.computeIfAbsent(macroToken.text, k -> new ArrayList<>());
+		list.add(token);
+	}
+
+
+	private void applyMacro(Macro macro, Token token) {
+		Map<String, List<Token>> args = new HashMap<>();
+		ArrayList<BracketsType> brackets = new ArrayList<>();
+
+
+		balance(brackets, token);
+		List<Token> macroText = macro.getMacroText();
+		for (int i = 0; i < macroText.size(); i++) {
+			Token macroToken = macroText.get(i);
+			token = nextToken();
+			System.out.println("mt: " + macroToken);
+			System.out.println("t: " + token);
+			balance(brackets, token);
+			if (macroToken.type == TokenType.DIRECTIVE_ARG) {
+				int startBalance = brackets.size();
+
+				for (; ; ) {
+					addArgsToken(args, macroToken, token);
 					token = nextToken();
-					if (macroToken.type == TokenType.DIRECTIVE_ARG) {
-						args.put(macroToken.text, OneOrMore.of(token));
-					} else {
-						if (macroToken.type != token.type || !Objects.equals(macroToken.text, token.text)) {
-							throw new UnexpectedTokenException(token, "\"" + macroToken.text + "\" expected");
-						}
+					System.out.println("t(a): " + token);
+					if (token.isBracket() && (i == macroText.size() - 1 || token.type == macroText.get(i + 1).type)) {
+						curTok--;
+						System.out.println(1);
+						break;
 					}
-				}
-				for (Token unfoldToken : macro.getUnfolds()) {
-					if (unfoldToken.type == TokenType.DIRECTIVE_ARG) {
-						for (Token t : args.get(unfoldToken.text)) {
-							nn = defs.get(t.text);
-							if (nn != null) t = nn.updateLocation(t.getLocation());
-							newTokens.add(t);
-						}
+					if (brackets.size() == startBalance - 1 || startBalance == 0) {
+						curTok--;
+						System.out.println(2);
+						break;
 					}
-					else {
-						nn = defs.get(unfoldToken.text);
-						if (nn != null) unfoldToken = nn.updateLocation(unfoldToken.getLocation());
-						newTokens.add(unfoldToken);
-					}
+					balance(brackets, token);
 				}
 			} else {
-				newTokens.add(token);
+				if (macroToken.type != token.type || !Objects.equals(macroToken.text, token.text)) {
+					throw new UnexpectedTokenException(token, "\"" + macroToken.text + "\" expected");
+				}
 			}
+		}
+		for (Map.Entry<String, List<Token>> entry : args.entrySet()) {
+			System.out.println(entry.getKey() + " -> " + entry.getValue());
+		}
+
+		if (!brackets.isEmpty()) disbalance(brackets, token.getLocation());
+
+		for (Token unfoldToken : macro.getUnfolds()) {
+			if (unfoldToken.type == TokenType.DIRECTIVE_ARG) {
+				val ts = args.get(unfoldToken.text);
+				if (ts == null) throw new CompilerException(unfoldToken.getLocation(), "Unknown macro argument");
+				for (Token t : ts) {
+					Token nn = getDef(t);
+					if (nn != null) t = nn.updateLocation(t.getLocation());
+					newTokens.add(t);
+				}
+			} else {
+				Token nn = getDef(unfoldToken);
+				if (nn != null) unfoldToken = nn.updateLocation(unfoldToken.getLocation());
+				newTokens.add(unfoldToken);
+			}
+		}
+	}
+
+	private void balance(ArrayList<BracketsType> brackets, Token token) {
+		if (token.type == TokenType.OPEN) {
+			brackets.add(BracketsType.FIGURE);
+		} else if (token.type == TokenType.OPEN_SQUARE) {
+			brackets.add(BracketsType.SQUARE);
+		} else if (token.type == TokenType.OPEN_ROUND) {
+			brackets.add(BracketsType.ROUND);
+		} else if (token.type == TokenType.OPEN_TRIANGLE) {
+			brackets.add(BracketsType.TRIANGLE);
+		} else if (token.type == TokenType.CLOSE) {
+			popOrDisbalance(brackets, BracketsType.FIGURE, token.getLocation());
+		} else if (token.type == TokenType.CLOSE_SQUARE) {
+			popOrDisbalance(brackets, BracketsType.SQUARE, token.getLocation());
+		} else if (token.type == TokenType.CLOSE_ROUND) {
+			popOrDisbalance(brackets, BracketsType.ROUND, token.getLocation());
+		} else if (token.type == TokenType.CLOSE_TRIANGLE) {
+			popOrDisbalance(brackets, BracketsType.TRIANGLE, token.getLocation());
 		}
 	}
 
@@ -124,7 +211,7 @@ public class Preprocessor {
 	}
 
 	private void readDirectives() {
-		for (iterator = srcTokens.listIterator(); hasNextToken(); ) {
+		for (curTok = 0; hasNextToken(); ) {
 			Token token = nextToken();
 			if (token.type == TokenType.COMMENT) continue;
 			if (token.type == TokenType.DIRECTIVE) {
@@ -160,7 +247,7 @@ public class Preprocessor {
 		if (name.type != TokenType.IDENTIFIER)
 			throw new UnexpectedTokenException(name, "macro name expected");
 
-		Collection<Token> macroText = new ArrayList<>();
+		List<Token> macroText = new ArrayList<>();
 		Token token = nextToken();
 
 		//noinspection ConditionalBreakInInfiniteLoop
@@ -169,10 +256,9 @@ public class Preprocessor {
 				break;
 			macroText.add(token);
 			token = nextToken();
-			iterator.remove();
 		}
 		// token = #unfolds there
-		Collection<Token> unfolds = new ArrayList<>();
+		List<Token> unfolds = new ArrayList<>();
 		token = nextToken();
 
 		//noinspection ConditionalBreakInInfiniteLoop

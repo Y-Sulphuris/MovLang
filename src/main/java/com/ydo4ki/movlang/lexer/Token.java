@@ -44,4 +44,11 @@ public class Token implements Tree {
 	public Location getLocation() {
 		return location;
 	}
+
+	public boolean isBracket() {
+		return type == TokenType.OPEN || type == TokenType.CLOSE
+				|| type == TokenType.OPEN_TRIANGLE || type == TokenType.CLOSE_TRIANGLE
+				|| type == TokenType.OPEN_ROUND || type == TokenType.CLOSE_ROUND
+				|| type == TokenType.OPEN_SQUARE || type == TokenType.CLOSE_SQUARE ;
+	}
 }

@@ -4,6 +4,7 @@ import com.ydo4ki.movlang.lexer.Token;
 import lombok.Data;
 
 import java.util.Collection;
+import java.util.List;
 
 // весь код был атличьна стырен с C32 и не переделан
 
@@ -14,8 +15,8 @@ import java.util.Collection;
 @Data
 class Macro {
 	private final Token name;
-	private final Collection<Token> macroText;
-	private final Collection<Token> unfolds;
+	private final List<Token> macroText;
+	private final List<Token> unfolds;
 
 	@Override
 	public String toString() {
