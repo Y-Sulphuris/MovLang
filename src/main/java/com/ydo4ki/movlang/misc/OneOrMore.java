@@ -149,5 +149,4 @@ public abstract class OneOrMore<T> implements Iterable<T> {
 			return values.length;
 		}
 	}
-
 }

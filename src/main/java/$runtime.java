@@ -186,10 +186,16 @@ public class $runtime {
 	static void flush(long _ConsoleSeg, long _Size) {
 		StringBuilder b = new StringBuilder();
 		int lastSymbol = 0;
+		boolean debug = false;
 		for (int i = 0; i < _Size; i++) {
-			char ch = (char) u.getByte(_ConsoleSeg + i);
-			if (!Character.isWhitespace(ch)) lastSymbol = i;
-			b.append(ch);
+			if (!debug) {
+				char ch = (char) u.getByte(_ConsoleSeg + i);
+				if (!Character.isWhitespace(ch)) lastSymbol = i;
+				b.append(ch);
+			} else {
+				b.append(String.format("%02x ", $runtime.u.getByte(_ConsoleSeg + i)));
+				if ($runtime.u.getByte(_ConsoleSeg + i) != ' ') lastSymbol = i;
+			}
 		}
 		System.out.print(b.substring(0, lastSymbol + 1));
 	}

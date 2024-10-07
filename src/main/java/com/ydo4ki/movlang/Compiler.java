@@ -82,7 +82,6 @@ public class Compiler {
 	@Nullable
 	private static Stack<Token> finalTokens;
 
-
 	private void compile(File outputFile) throws IOException {
 		source = getSource(srcFile);
 		val prepInf = new Preprocessor(new Tokenizer().tokenize(source, srcFile)).preprocess();
