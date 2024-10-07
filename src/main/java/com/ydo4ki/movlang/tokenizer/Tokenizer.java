@@ -190,6 +190,9 @@ public class Tokenizer {
 			case ',':
 				type = TokenType.COMMA;
 				break;
+			case '@':
+				type = TokenType.AT;
+				break;
 			default:
 				type = TokenType.ERROR;
 				exception = new Exception();
@@ -256,6 +259,6 @@ public class Tokenizer {
 	}
 
 	private boolean isValidNameChar(char ch) {
-		return ch == '_' || ch == '@' || isNumeric(ch) || Character.isAlphabetic(ch);
+		return ch == '_' || isNumeric(ch) || Character.isAlphabetic(ch);
 	}
 }

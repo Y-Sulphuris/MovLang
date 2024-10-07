@@ -11,21 +11,23 @@ import java.util.Map;
  * @since 02.10.2024 14:51
  */
 public class LabelReferenceExprTree implements ExprTree {
+	private final Token at;
 	private final Token labelName;
-	private final Map<String, LabelTree> allLabels;
+	private final Map<String, LabelTree> allLabelsRef;
 
-	public LabelReferenceExprTree(Token labelName, Map<String, LabelTree> allLabels) {
+	public LabelReferenceExprTree(Token at, Token labelName, Map<String, LabelTree> allLabels) {
+		this.at = at;
 		this.labelName = labelName;
-		this.allLabels = allLabels;
+		this.allLabelsRef = allLabels;
 	}
 
 	public LabelTree getLabel() {
-		return allLabels.get(labelName.text.substring(1));
+		return allLabelsRef.get(labelName.text);
 	}
 
 	@Override
 	public Location getLocation() {
-		return labelName.getLocation();
+		return Location.between(at, labelName);
 	}
 
 	@Override

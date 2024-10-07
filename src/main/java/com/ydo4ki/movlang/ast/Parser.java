@@ -81,9 +81,11 @@ public class Parser {
 		//if (token.type == TokenType.NUMBER) return parseNumberExpr();
 		if (token.type == TokenType.CHARS) return parseCharLiteral();
 		if (token.type == TokenType.BITS) return parseBitsNumberExpr();
+		if (token.type == TokenType.AT) {
+			return parseLabelPtr();
+		}
 		if (token.type == TokenType.IDENTIFIER) {
 			if (seeNextToken().type == TokenType.OPEN_SQUARE) return parseLValue();
-			if (token.text.charAt(0) == '@') return parseLabelPtr();
 			return parseNumberExpr();
 		}
 		throw new UnexpectedTokenException(token, "Expression expected");
@@ -94,8 +96,9 @@ public class Parser {
 	}
 
 	private LabelReferenceExprTree parseLabelPtr() {
+		Token at = assertAndNext(TokenType.AT);
 		Token name = assertAndNext(TokenType.IDENTIFIER);
-		return new LabelReferenceExprTree(name, labels);
+		return new LabelReferenceExprTree(at, name, labels);
 	}
 
 	private BitSizeExprTree parseBitsNumberExpr() {

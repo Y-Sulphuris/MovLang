@@ -49,8 +49,15 @@ public class Preprocessor {
 		readMacrosAndDirectives();
 		applyMacros();
 		readAndApplyDefs();
+		glue();
 		return new PreprocessorInfo(newTokens, segmentInfoList, default_seg_size, address_size, implicit_seg);
 	}
+
+	private void glue() {
+		// nop
+	}
+
+	private static long uniq = 0;
 
 	private void readAndApplyDefs() {
 		final Map<String, Token> defs = new HashMap<>();
@@ -68,6 +75,20 @@ public class Preprocessor {
 						token = nextToken();
 						String alias = token.text;
 						defs.remove(alias);
+					} break;
+					case "filename": {
+						newTokens.add(new Token(TokenType.IDENTIFIER, token.location.getSourceFile().getName(), token.location));
+					} break;
+					case "line": {
+						newTokens.add(new Token(TokenType.NUMBER, String.valueOf(token.location.getStartLine()), token.location));
+					} break;
+					case "time": {
+						newTokens.add(new Token(TokenType.NUMBER, Long.toString(System.currentTimeMillis()), token.location));
+						newTokens.add(new Token(TokenType.COLON, ":", token.location));
+						newTokens.add(new Token(TokenType.NUMBER, "8", token.location));
+					} break;
+					case "uniq": {
+						newTokens.add(new Token(TokenType.NUMBER, Long.toString(uniq++, 16), token.location));
 					} break;
 				}
 			} else {

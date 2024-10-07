@@ -24,5 +24,7 @@ public enum TokenType {
 	CLOSE,
 	COMMA,
 	DOT,
-	ELLIPSIS
+	ELLIPSIS,
+	AT,
+	GLUE // !
 }
