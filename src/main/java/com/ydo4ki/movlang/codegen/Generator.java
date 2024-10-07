@@ -113,9 +113,9 @@ public class Generator {
 		Long bSize = statement.getBitSize();
 		String method;
 		String sign;
-		loadDereferensing(mv, statement.getDest());
+		loadDereferencing(mv, statement.getDest());
 		if (statement.getSrc() instanceof DereferenceExprTree) {
-			loadDereferensing(mv, (DereferenceExprTree) statement.getSrc());
+			loadDereferencing(mv, (DereferenceExprTree) statement.getSrc());
 			method = movName(size);
 			sign = movSign(size, bSize);
 		} else {
@@ -124,12 +124,13 @@ public class Generator {
 			String la = typeBySize(size);
 			sign = "(JI" + la + ")V";
 		}
-		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, sign);
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, sign, false);
 
 		if (statement.getDest().getSegment().text.equals(prepInf.getStdout().getName())) {
 			mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getStdout(), "J");
-			mv.visitLdcInsn(prepInf.getStdout().getSize());
-			mv.visitMethodInsn(INVOKESTATIC, "$runtime", "repaintConsole", "(JJ)V");
+			// mv.visitLdcInsn(prepInf.getStdout().getSize());
+			loadExpr(mv, statement.getDest().getAddress(), size);
+			mv.visitMethodInsn(INVOKESTATIC, "$runtime", "updateConsole", "(JI)V", false);
 		}
 	}
 
@@ -159,7 +160,7 @@ public class Generator {
 
 	private void loadExpr(MethodVisitor mv, ExprTree src, Long size) {
 		if (src instanceof DereferenceExprTree) {
-			loadDereferensing(mv, (DereferenceExprTree) src);
+			loadDereferencing(mv, (DereferenceExprTree) src);
 			if (size == 4) mv.visitMethodInsn(INVOKESTATIC, "$runtime", "getAddr", "(JI)I");
 			else if (size == 1) {
 				mv.visitMethodInsn(INVOKESTATIC, "$runtime", "get", "(JI)B");
@@ -225,7 +226,7 @@ public class Generator {
 		mv.visitLdcInsn(size);
 	}
 
-	private void loadDereferensing(MethodVisitor mv, DereferenceExprTree dest) {
+	private void loadDereferencing(MethodVisitor mv, DereferenceExprTree dest) {
 		mv.visitFieldInsn(GETSTATIC, "$program", "$" + dest.getSegment().text, "J");
 		loadExpr(mv, dest.getAddress(), prepInf.getAddress_size());
 		val offset = dest.getOffset();

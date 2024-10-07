@@ -13,29 +13,29 @@
 S[0] 0
 
 hello:
-stdout[S[0]] 'H'
-inc S[0+5]
-stdout[S[0]] 'e'
+C[S[0]] 'H'
+inc S[0]
+C[S[0]] 'e'
 inc S[0]
 C[S[0]] 'l'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] 'l'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] 'o'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 
 C[S[0]] 'W'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] 'o'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] 'r'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] 'l'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] 'd'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 C[S[0]] '!'
-S[0] 0[inc_table + S[0]]
+inc S[0]
 
 0[0] C[S[0] + 0B]
 0[1] 0 : 3
@@ -43,6 +43,8 @@ C[S[0]] 0[inc_table + R[0]]
 S[0] 0[inc_table + S[0]]
 // C[S[0] + 0B] 0[inc_table + R[0] : 1]
 
+C[100] '/'
+C[101] '\\'
 
 
 E[0] @hello

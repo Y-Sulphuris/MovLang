@@ -90,10 +90,10 @@ public class Compiler {
 		//}
 		finalTokens = prepInf.getTokens();
 		val cu = new Parser(finalTokens, srcFile.getName()).parse();
-		System.out.println("\nStatements:\n");
-		for (StatementTree statement : cu.getStatements()) {
-			System.out.println(statement);
-		}
+		//System.out.println("\nStatements:\n");
+		//for (StatementTree statement : cu.getStatements()) {
+		//	System.out.println(statement);
+		//}
 		new Generator(prepInf).generate(cu,outputFile);
 	}
 
