@@ -32,6 +32,7 @@ public class Token implements Tree {
 
 	@Override
 	public String toString() {
+
 		return "Token{" + type +
 				(text != null ? " = '" + text + '\'' : "") +
 				", startpos=" + location.getStartPos() +
