@@ -1,0 +1,9 @@
+#macro pc #unfolds E[00] #end_macro
+#macro sp #unfolds E[04] #end_macro
+
+
+#macro push(#val#)
+#unfolds
+__StackSeg[]
+#end_macro
+

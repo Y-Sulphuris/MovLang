@@ -92,11 +92,12 @@ public class Preprocessor {
 					} break;
 				}
 			} else {
-				Token nn = null;
-				if (token.type == TokenType.IDENTIFIER || token.type == TokenType.NUMBER)
+				Token nn;
+				while (token.type == TokenType.IDENTIFIER || token.type == TokenType.NUMBER) {
 					nn = defs.get(token.text);
-				if (nn != null) {
-					token = nn.updateLocation(token.location);
+					if (nn != null) {
+						token = nn.updateLocation(token.location);
+					} else break;
 				}
 				newTokens.add(token);
 			}
@@ -246,6 +247,7 @@ public class Preprocessor {
 
 	private <T> void putChecked(Map<String, T> target, String name, T value, Location location) {
 		if (macros.containsKey(name)) throw new CompilerException(location, "There is already a macro with that name");
+		if (target.containsKey(name)) throw new CompilerException(location, "There is already def with that name (use undef first if you want to override it)");
 		target.put(name, value);
 	}
 
