@@ -41,8 +41,11 @@ public class Preprocessor {
 	}
 
 	private long default_seg_size = 0xFFFF;
+	private boolean default_seg_size_specified = false;
 	private int address_size = 0x4;
+	private boolean address_size_specified = false;
 	private boolean implicit_seg = true;
+	private boolean implicit_seg_specified = false;
 
 	public PreprocessorInfo preprocess() {
 		includeFiles();
@@ -265,6 +268,12 @@ public class Preprocessor {
 					case "segment": {
 						token = nextToken();
 						String seg = token.text;
+						for (SegmentInfo segmentInfo : segmentInfoList) {
+							if (segmentInfo.getName().equals(seg)) {
+								val msg = "This segment is already declared with size " + Long.toUnsignedString(segmentInfo.getSize(), 16);
+								throw new CompilerException(token.getLocation(), msg);
+							}
+						}
 						token = nextToken();
 						try {
 							long size = Long.parseUnsignedLong(token.text, 16);
@@ -281,9 +290,15 @@ public class Preprocessor {
 						try {
 							switch (rule) {
 								case "default_seg_size": {
+									if (default_seg_size_specified)
+										throw new CompilerException(token.getLocation(), rule + " is already specified");
+									default_seg_size_specified = true;
 									default_seg_size = Long.parseUnsignedLong(value, 16);
 								} break;
 								case "address_size": {
+									if (address_size_specified)
+										throw new CompilerException(token.getLocation(), rule + " is already specified");
+									address_size_specified = true;
 									address_size = Integer.parseUnsignedInt(value, 16);
 									switch (address_size) {
 										case 1:
@@ -296,6 +311,9 @@ public class Preprocessor {
 									}
 								} break;
 								case "implicit_seg": {
+									if (implicit_seg_specified)
+										throw new CompilerException(token.getLocation(), rule + " is already specified");
+									implicit_seg_specified = true;
 									int val = Integer.parseUnsignedInt(value, 16);
 									if (val != 0 && val != 1)
 										throw new CompilerException(token.getLocation(), "Invalid value: " + val + "(0 or 1 expected)");

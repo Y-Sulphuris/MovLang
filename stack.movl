@@ -1,9 +1,44 @@
+/*
+E segment structure
+OFFSET	SIZE	DESCRIPTION
+     0	   4	pc (current instruction pointer)
+     4	   4	-
+     8	   8	Flags value
+    10	   1	f0 (zero flag, linked with zero bit of Flags value)
+    11	   1	f1 (first flag, linked with first bit of Flags value)
+    ...
+    4f	   1	f4f (63 flag, linked with 63rd bit of Flags value)
+
+    50	   8	s8x0 (8 bytes status value 0)
+    58	   8	s8x1 (8 bytes status value 1)
+    60	   8	s8x2 (8 bytes status value 2)
+    68	   8	s8x3 (8 bytes status value 3)
+
+    70	   4	s4x0 (4 bytes status value 0)
+    74	   4	s4x1 (4 bytes status value 1)
+    78	   4	s4x2 (4 bytes status value 2)
+    7c	   4	s4x3 (4 bytes status value 3)
+
+    80	   2	s2x0 (2 bytes status value 0)
+    82	   2	s2x1 (2 bytes status value 1)
+    84	   2	s2x2 (2 bytes status value 2)
+    86	   2	s2x3 (2 bytes status value 3)
+
+    88	   1	s1x0 (1 bytes status value 0)
+    89	   1	s1x1 (1 bytes status value 1)
+    8a	   1	s1x2 (1 bytes status value 2)
+    8b	   1	s1x3 (1 bytes status value 3)
+
+sizeof E = ff
+*/
+
 #macro pc #unfolds E[00] #end_macro
 #macro sp #unfolds E[04] #end_macro
 
 
 #macro push(#val#)
 #unfolds
-__StackSeg[]
+__StackSeg[sp]
 #end_macro
+
 

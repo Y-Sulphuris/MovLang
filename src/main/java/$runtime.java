@@ -34,21 +34,6 @@ public class $runtime {
 	public static final Unsafe u = getU();
 
 
-	private static long affectedBytes(long bits) {
-		return (bits / 8) + (bits % 8 == 0 ? 0 : 1);
-	}
-
-	public static void main(String[] args) {
-		movB(0, 7, 1024, 8, 9);
-	}
-	static void movB(long _DstSeg, long _DstBitOffset, long _SrcSeg, long _SrcBitOffset, long _Bits) {
-		long dstAffectStart = (_DstBitOffset / 8);
-		long srcAffectStart = (_SrcBitOffset / 8);
-		long dstSize = affectedBytes(_Bits); /*+ bit offset*/;
-		System.out.println(dstAffectStart);
-		System.out.println(srcAffectStart);
-		System.out.println(dstSize);
-	}
 
 	static void mov(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr, long _Bytes) {
 		u.copyMemory(_SrcSeg + _SrcAddr, _DstSeg + _DstAddr, _Bytes);
@@ -86,6 +71,32 @@ public class $runtime {
 	static void put(long _Segment, int _Addr, long _Value) {
 		u.putLong(_Segment + _Addr, _Value);
 	}
+
+
+	static void putE(long _Segment, int _Addr, byte _Value) {
+		u.putByte(_Segment + _Addr, _Value);
+		updateFlagsValue(_Segment);
+	}
+
+	static void putE(long _Segment, int _Addr, short _Value) {
+		u.putShort(_Segment + _Addr, _Value);
+		updateFlagsValue(_Segment);
+	}
+
+	static void putE(long _Segment, int _Addr, int _Value) {
+		u.putInt(_Segment + _Addr, _Value);
+		updateFlagsValue(_Segment);
+	}
+
+	static void putE(long _Segment, int _Addr, long _Value) {
+		u.putLong(_Segment + _Addr, _Value);
+		updateFlagsValue(_Segment);
+	}
+
+	private static void updateFlagsValue(long e) {
+
+	}
+
 
 	static void put(long _Segment, int _Addr, long _Value, int _BitSize) {
 		if (_BitSize == Long.SIZE) {
@@ -152,7 +163,10 @@ public class $runtime {
 		return a;
 	}
 
+	private static long $E;
+
 	static void run(MethodHandle[] instructions, long $E) throws Throwable {
+		$runtime.$E = $E;
 		AnsiConsole.systemInstall();
 		clearConsole();
 		$runtime.u.putInt($E, 0);
