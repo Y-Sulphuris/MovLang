@@ -4,6 +4,7 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 import sun.misc.Unsafe;
 
+import java.io.PrintStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -55,6 +56,26 @@ public class $runtime {
 		u.putLong(_DstSeg + _DstAddr, u.getLong(_SrcSeg + _SrcAddr));
 	}
 
+	static void movE(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr, long _Bytes) {
+		mov(_DstSeg, _DstAddr, _SrcSeg, _SrcAddr, _Bytes);
+	}
+
+	static void mov1E(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		mov1(_DstSeg, _DstAddr, _SrcSeg, _SrcAddr);
+	}
+
+	static void mov2E(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		mov2(_DstSeg, _DstAddr, _SrcSeg, _SrcAddr);
+	}
+
+	static void mov4E(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		mov4(_DstSeg, _DstAddr, _SrcSeg, _SrcAddr);
+	}
+
+	static void mov8E(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr) {
+		mov8(_DstSeg, _DstAddr, _SrcSeg, _SrcAddr);
+	}
+
 
 	static void put(long _Segment, int _Addr, byte _Value) {
 		u.putByte(_Segment + _Addr, _Value);
@@ -74,27 +95,57 @@ public class $runtime {
 
 
 	static void putE(long _Segment, int _Addr, byte _Value) {
-		u.putByte(_Segment + _Addr, _Value);
-		updateFlagsValue(_Segment);
+		put(_Segment, _Addr, _Value);
+		updateFlagsValue(_Segment, _Addr);
 	}
 
 	static void putE(long _Segment, int _Addr, short _Value) {
-		u.putShort(_Segment + _Addr, _Value);
-		updateFlagsValue(_Segment);
+		put(_Segment, _Addr, _Value);
+		updateFlagsValue(_Segment, _Addr);
 	}
 
 	static void putE(long _Segment, int _Addr, int _Value) {
-		u.putInt(_Segment + _Addr, _Value);
-		updateFlagsValue(_Segment);
+		put(_Segment, _Addr, _Value);
+		updateFlagsValue(_Segment, _Addr);
 	}
 
 	static void putE(long _Segment, int _Addr, long _Value) {
-		u.putLong(_Segment + _Addr, _Value);
-		updateFlagsValue(_Segment);
+		alignCheck(_Addr, 8);
+		put(_Segment, _Addr, _Value);
+		updateFlagsValue(_Segment, _Addr);
 	}
 
-	private static void updateFlagsValue(long e) {
+	private static void alignCheck(int _Addr, int _Value) {
+		if (_Addr % _Value != 0) System.exit(0x30);
+	}
 
+	private static void updateFlagsValue(long e, int _Addr) {
+		if (_Addr >= 0x8 && _Addr < 0x10) {
+			long val = u.getLong(e + _Addr);
+			for (long i = 0; i < 64; i++) {
+				System.out.println("["+i+"] " + bit(val, i));
+				u.putByte(e + i + 0x10, bit(val, i));
+			}
+		}
+		if (_Addr >= 0x10 && _Addr < 0x50) {
+			long val = 0;
+			for (long i = 0; i < 64; i++) {;
+				val = setbit(val, i, u.getByte(e + i + 0x10));
+			}
+			u.putLong(e + _Addr, val);
+		}
+	}
+
+	private static long setbit(long val, long i, byte bit) {
+		if (bit == 0) {
+			return val & ~(1L << i);
+		} else {
+			return val | 1L << i;
+		}
+	}
+
+	private static byte bit(long val, long i) {
+		return (byte) ((val >> i & 1L) == 0 ? 0 : 1);
 	}
 
 
@@ -176,8 +227,29 @@ public class $runtime {
 			if (i > instructions.length || i < 0) System.exit(0x6C);
 			instructions[i].invokeExact();
 		}
-		System.exit($runtime.u.getInt($E + 4));
+		boolean debug = true;
+		if (debug) {
+			System.out.println("Program finished");
+			System.out.println("Executable segment data:");
+			printMemory(System.out, $E, 0x100);
+		}
 		AnsiConsole.systemUninstall();
+		System.exit($runtime.u.getInt($E + 4));
+	}
+
+
+	private static void printMemory(PrintStream out, long mem, long size) {
+		printMemory(out, mem, size, 4, 4);
+	}
+
+	private static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount) {
+		for (int i = 0; i < size; i++) {
+			if (i % (colSize * colCount) == 0)
+				out.print((i == 0 ? "" : "\n") + "[" + String.format("%08x", (mem + i)) + "] (+" + String.format("%04x", i) + ")\t");
+			out.printf("%02x ", $runtime.u.getByte(mem + i));
+			if (i % colSize == colSize - 1) out.print("  ");
+		}
+		out.println();
 	}
 
 	private static final MethodHandle clr;
@@ -261,4 +333,11 @@ public class $runtime {
 		u.putLong(_StartAddress + Long.BYTES, (b2 << n) | (b1 << (Long.SIZE - n)));
 	}
     */
+
+	public static void main(String[] args) {
+		StringBuilder b = new StringBuilder(64);
+		for (long i = 0; i < 0xFFFFFFFFL; i++) {
+			b.append(String.format("%08x ", $runtime.u.getByte(_ConsoleSeg + i)))
+		}
+	}
 }

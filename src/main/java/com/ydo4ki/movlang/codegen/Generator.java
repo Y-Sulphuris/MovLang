@@ -110,6 +110,7 @@ public class Generator {
 	private void writeStatement0(MethodVisitor mv, StatementTree statement) {
 		Long size = statement.getBytesSize(prepInf.getAddress_size());
 		if (size != null && size.equals(0L)) return;
+		String e = statement.getDest().getSegment().text.equals(prepInf.getExecutable().getName()) ? "E" : "";
 		Long bSize = statement.getBitSize();
 		String method;
 		String sign;
@@ -124,7 +125,8 @@ public class Generator {
 			String la = typeBySize(size);
 			sign = "(JI" + la + ")V";
 		}
-		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method, sign, false);
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", method + e, sign, false);
+
 
 		if (statement.getDest().getSegment().text.equals(prepInf.getStdout().getName())) {
 			mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getStdout(), "J");
@@ -237,7 +239,8 @@ public class Generator {
 
 		String name = dest.getSegment().text;
 		if (!segments.containsKey(name)) {
-			if (prepInf.isImplicit_seg()) throw new CompilerException(dest.getLocation(), "Unknown segment: " + name);
+			if (prepInf.isImplicit_seg())
+				throw new CompilerException(dest.getLocation(), "Unknown segment: " + name);
 			segments.put(name, prepInf.getDefault_seg_size());
 		}
 	}

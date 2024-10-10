@@ -35,6 +35,8 @@ sizeof E = ff
 #macro pc #unfolds E[00] #end_macro
 #macro sp #unfolds E[04] #end_macro
 
+// ignored xd
+#segment E ff
 
 #macro push(#val#)
 #unfolds

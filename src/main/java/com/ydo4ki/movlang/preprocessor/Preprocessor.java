@@ -44,7 +44,7 @@ public class Preprocessor {
 	private boolean default_seg_size_specified = false;
 	private int address_size = 0x4;
 	private boolean address_size_specified = false;
-	private boolean implicit_seg = true;
+	private boolean implicit_seg = false;
 	private boolean implicit_seg_specified = false;
 
 	public PreprocessorInfo preprocess() {
