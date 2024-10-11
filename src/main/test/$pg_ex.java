@@ -18,7 +18,7 @@ public class $pg_ex {
 	static final long $S = $runtime.segment(0xFFFFL);
 
 	public static void main(String[] args) throws Throwable {
-		$runtime.run(instructions, $E);
+		$runtime.run(instructions, $E, false);
 	}
 
 	static void $0() {

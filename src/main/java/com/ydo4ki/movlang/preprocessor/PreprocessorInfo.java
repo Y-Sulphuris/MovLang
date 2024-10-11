@@ -14,9 +14,9 @@ import java.util.Stack;
 public class PreprocessorInfo {
 	private final Stack<Token> tokens;
 	private final List<SegmentInfo> segmentInfoList;
-	private SegmentInfo executable = new SegmentInfo("E",0xFF);
+	private SegmentInfo executable = new SegmentInfo("E",0x100);
 	@Deprecated
-	private SegmentInfo stdout = new SegmentInfo("C", 0xFFFF);
+	private SegmentInfo stdout = new SegmentInfo("C", 0x10000);
 
 	private final long default_seg_size;
 	private final long address_size;

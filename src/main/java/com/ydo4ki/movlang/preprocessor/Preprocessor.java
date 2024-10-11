@@ -40,7 +40,7 @@ public class Preprocessor {
 		return curTok < srcTokens.size();
 	}
 
-	private long default_seg_size = 0xFFFF;
+	private long default_seg_size = 0x10000;
 	private boolean default_seg_size_specified = false;
 	private int address_size = 0x4;
 	private boolean address_size_specified = false;

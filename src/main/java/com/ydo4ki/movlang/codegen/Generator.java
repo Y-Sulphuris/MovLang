@@ -66,6 +66,8 @@ public class Generator {
 		}
 	}
 
+	public static final boolean debug = true;
+
 	private void writeMain(ClassWriter cw, CompilationUnitTree cu) {
 		MethodVisitor mv = cw.visitMethod(ACC_PUBLIC | ACC_STATIC, "main", "([Ljava/lang/String;)V", null, null);
 		Label l = new Label();
@@ -73,7 +75,8 @@ public class Generator {
 		mv.visitLineNumber(-1, l);
 		mv.visitFieldInsn(GETSTATIC, "$program", "instructions", "[Ljava/lang/invoke/MethodHandle;");
 		mv.visitFieldInsn(GETSTATIC, "$program", "$" + prepInf.getExecutable(), "J");
-		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "run", "([Ljava/lang/invoke/MethodHandle;J)V");
+		mv.visitInsn(debug ? ICONST_1 : ICONST_0);
+		mv.visitMethodInsn(INVOKESTATIC, "$runtime", "run", "([Ljava/lang/invoke/MethodHandle;JZ)V");
 
 
 		mv.visitInsn(RETURN);
@@ -210,7 +213,7 @@ public class Generator {
 	private void loadNumberConst(MethodVisitor mv, NumericLiteralExprTree src, Long _Size) {
 		long size = _Size;
 		if (size == 8) {
-			mv.visitLdcInsn(src.getValue().longValueExact());
+			mv.visitLdcInsn(src.getValue().longValue());
 		} else if (size == 4 || size == 2 || size == 1) {
 			loadIntValue(mv, src.getValue().intValue());
 		} else {

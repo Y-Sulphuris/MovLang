@@ -35,7 +35,6 @@ public class $runtime {
 	public static final Unsafe u = getU();
 
 
-
 	static void mov(long _DstSeg, int _DstAddr, long _SrcSeg, int _SrcAddr, long _Bytes) {
 		u.copyMemory(_SrcSeg + _SrcAddr, _DstSeg + _DstAddr, _Bytes);
 	}
@@ -123,13 +122,13 @@ public class $runtime {
 		if (_Addr >= 0x8 && _Addr < 0x10) {
 			long val = u.getLong(e + _Addr);
 			for (long i = 0; i < 64; i++) {
-				System.out.println("["+i+"] " + bit(val, i));
 				u.putByte(e + i + 0x10, bit(val, i));
 			}
 		}
 		if (_Addr >= 0x10 && _Addr < 0x50) {
 			long val = 0;
-			for (long i = 0; i < 64; i++) {;
+			for (long i = 0; i < 64; i++) {
+				;
 				val = setbit(val, i, u.getByte(e + i + 0x10));
 			}
 			u.putLong(e + _Addr, val);
@@ -145,7 +144,7 @@ public class $runtime {
 	}
 
 	private static byte bit(long val, long i) {
-		return (byte) ((val >> i & 1L) == 0 ? 0 : 1);
+		return (byte) (((val >> i) & 1L) == 0 ? 0 : 1);
 	}
 
 
@@ -216,7 +215,7 @@ public class $runtime {
 
 	private static long $E;
 
-	static void run(MethodHandle[] instructions, long $E) throws Throwable {
+	static void run(MethodHandle[] instructions, long $E, boolean debug) throws Throwable {
 		$runtime.$E = $E;
 		AnsiConsole.systemInstall();
 		clearConsole();
@@ -227,11 +226,28 @@ public class $runtime {
 			if (i > instructions.length || i < 0) System.exit(0x6C);
 			instructions[i].invokeExact();
 		}
-		boolean debug = true;
 		if (debug) {
 			System.out.println("Program finished");
 			System.out.println("Executable segment data:");
-			printMemory(System.out, $E, 0x100);
+			System.out.println("E[X]                    " + "pc            -             " + "Flags value              ");
+			printMemory(System.out, $E, 0, 0x10, 4, 4);
+			System.out.print("                        " + "Flags");
+			printMemory(System.out, $E, 0x10, 0x50, 4, 4);
+			System.out.println();
+			System.out.print("                        " + "s8x0 (status values)        " + "s8x1                     ");
+			printMemory(System.out, $E, 0x50, 0x60, 4, 4);
+			System.out.print("                        " + "s8x2                        " + "s8x3                     ");
+			printMemory(System.out, $E, 0x60, 0x70, 4, 4);
+			System.out.println();
+			System.out.print("                        " + "s4x0          s4x1          " + "s4x2          s4x3       ");
+			printMemory(System.out, $E, 0x70, 0x80, 4, 4);
+			System.out.print("                        " + "s2x0  s2x1    s2x3  s2x4    " + "1 byte status values     ");
+			printMemory(System.out, $E, 0x80, 0x90, 4, 4);
+			System.out.println();
+			System.out.print("                        " + "sp            bp            " + "-             -          ");
+			printMemory(System.out, $E, 0x90, 0xa0, 4, 4);
+			System.out.print("                        " + "Unused                                               ");
+			printMemory(System.out, $E, 0xa0, 0x100, 4, 4);
 		}
 		AnsiConsole.systemUninstall();
 		System.exit($runtime.u.getInt($E + 4));
@@ -243,7 +259,11 @@ public class $runtime {
 	}
 
 	private static void printMemory(PrintStream out, long mem, long size, int colSize, int colCount) {
-		for (int i = 0; i < size; i++) {
+		printMemory(out, mem, 0, size, colSize, colCount);
+	}
+
+	private static void printMemory(PrintStream out, long mem, int start, long end, int colSize, int colCount) {
+		for (int i = start; i < end; i++) {
 			if (i % (colSize * colCount) == 0)
 				out.print((i == 0 ? "" : "\n") + "[" + String.format("%08x", (mem + i)) + "] (+" + String.format("%04x", i) + ")\t");
 			out.printf("%02x ", $runtime.u.getByte(mem + i));
@@ -334,10 +354,17 @@ public class $runtime {
 	}
     */
 
+	/*
 	public static void main(String[] args) {
-		StringBuilder b = new StringBuilder(64);
-		for (long i = 0; i < 0xFFFFFFFFL; i++) {
-			b.append(String.format("%08x ", $runtime.u.getByte(_ConsoleSeg + i)))
+		int bufferCapacity = 0xFFFF;
+		StringBuilder b = new StringBuilder(bufferCapacity);
+		for (long i = 0; i <= 0xFFFFFFFFL; i++) {
+			if (i % bufferCapacity == 0) {
+				// flush
+				System.out.print(b);
+				b.setLength(0);
+			}
+			b.append(String.format("%08x ", i));
 		}
-	}
+	}*/
 }

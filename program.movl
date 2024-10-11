@@ -1,5 +1,5 @@
 #include stack
 
 test:
-E[08] ff
+E[08] ffffffffffffffff : 8
 //E[11] 1
